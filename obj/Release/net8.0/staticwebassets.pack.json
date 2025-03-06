@@ -1,0 +1,49 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\Mustafa Omar\\Downloads\\Acies\\AciesManagmentProject\\AciesManagmentProject\\wwwroot\\Images_Server\\55f0277a45d0d82b0fcbf6ace24f5a6c.jpg",
+      "PackagePath": "staticwebassets\\Images_Server\\55f0277a45d0d82b0fcbf6ace24f5a6c.jpg"
+    },
+    {
+      "Id": "C:\\Users\\Mustafa Omar\\Downloads\\Acies\\AciesManagmentProject\\AciesManagmentProject\\wwwroot\\Images_Server\\New Microsoft Excel Worksheet (2).xlsx",
+      "PackagePath": "staticwebassets\\Images_Server\\New Microsoft Excel Worksheet (2).xlsx"
+    },
+    {
+      "Id": "C:\\Users\\Mustafa Omar\\Downloads\\Acies\\AciesManagmentProject\\AciesManagmentProject\\wwwroot\\Images_Server\\RE4wB6t.jpeg",
+      "PackagePath": "staticwebassets\\Images_Server\\RE4wB6t.jpeg"
+    },
+    {
+      "Id": "C:\\Users\\Mustafa Omar\\Downloads\\Acies\\AciesManagmentProject\\AciesManagmentProject\\wwwroot\\Images_Server\\aciesDB.png",
+      "PackagePath": "staticwebassets\\Images_Server\\aciesDB.png"
+    },
+    {
+      "Id": "C:\\Users\\Mustafa Omar\\Downloads\\Acies\\AciesManagmentProject\\AciesManagmentProject\\wwwroot\\Images_Server\\logo192.png",
+      "PackagePath": "staticwebassets\\Images_Server\\logo192.png"
+    },
+    {
+      "Id": "C:\\Users\\Mustafa Omar\\Downloads\\Acies\\AciesManagmentProject\\AciesManagmentProject\\wwwroot\\Images_Server\\logo512.png",
+      "PackagePath": "staticwebassets\\Images_Server\\logo512.png"
+    },
+    {
+      "Id": "C:\\Users\\Mustafa Omar\\Downloads\\Acies\\AciesManagmentProject\\AciesManagmentProject\\wwwroot\\Images_Server\\robots.txt",
+      "PackagePath": "staticwebassets\\Images_Server\\robots.txt"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.AciesManagmentProject.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.build.AciesManagmentProject.props",
+      "PackagePath": "build\\AciesManagmentProject.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.AciesManagmentProject.props",
+      "PackagePath": "buildMultiTargeting\\AciesManagmentProject.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildTransitive.AciesManagmentProject.props",
+      "PackagePath": "buildTransitive\\AciesManagmentProject.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

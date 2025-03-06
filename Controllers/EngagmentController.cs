@@ -1,0 +1,558 @@
+﻿using AciesManagmentProject.DTO;
+using AciesManagmentProject.help;
+using AciesManagmentProject.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AciesManagmentProject.Controllers
+{
+    [Route("api/[controller]"),Authorize]
+    [ApiController]
+    public class EngagmentController(AciesContext context, IWebHostEnvironment _environment) : ControllerBase
+    {
+        //[Route("IWebHostEnvironment")]
+        //public class ServerFiles
+        //{
+        //    public IFormFile Files { get; set; }
+
+        //}
+
+        [HttpGet]
+        [Route("Save/As/Server")]
+        public string post_file(IFormFile file)
+        {
+            if (file != null)
+            {
+                if (file.Length > 0)
+                {
+                    if (!Directory.Exists(_environment.WebRootPath + "//Images_Server//"))
+                    {
+                        Directory.CreateDirectory(_environment.WebRootPath + "//Images_Server//");
+                    }
+                    using (FileStream filestrem = System.IO.File.Create(_environment.WebRootPath + "//Images_Server//" + file.FileName))
+                    {
+                        file.CopyTo(filestrem);
+                        filestrem.Flush();
+
+                        return "//Images_Server//" + file.FileName;
+                    }
+                }
+                else
+                    return "This Video Not Uploaded";
+            }
+            return null;
+
+        }
+
+        [HttpPost]
+        [Route("Insert/Engagment")]
+        public IActionResult InsertEngagment([FromForm] InsertEngagmentClass insertEngagmentClass)
+        {
+            try
+            {
+
+                EngagmentTb engagmentTb = new EngagmentTb()
+                {
+                    EngagmentName = insertEngagmentClass.EngagmentName,
+                    EngagmentDescription = insertEngagmentClass.EngagmentDescription,
+                    EngagmentCreatedDate = DateTime.Now.Date,
+                    EngagmentFile = post_file(insertEngagmentClass.EngagmentFile),
+                    EngagmentStatus = true,
+                    FinancialMangmentSystemId = insertEngagmentClass.FinancialMangmentSystemId,
+                    OrganizationId = insertEngagmentClass.OrganizationId,
+                    ReportingFrequencyId = insertEngagmentClass.ReportingFrequencyId,
+                    OwnerId = insertEngagmentClass.OwnerId,
+                    CopmanySicid = insertEngagmentClass.CopmanySicid,
+                    FiscalStartDay = insertEngagmentClass.FiscalStartDay,
+                    FiscalStartMonth = insertEngagmentClass.FiscalStartMonth,
+                    Type = insertEngagmentClass.Type
+                };
+                if (insertEngagmentClass.LibraryId is not null)
+                    engagmentTb.LibraryId = insertEngagmentClass.LibraryId.Value;
+                context.EngagmentTbs.Add(engagmentTb);
+                context.SaveChanges();
+                int engagId = engagmentTb.EngagmentId;
+                UserEngagmentTb userEngagmentTb = new UserEngagmentTb()
+                {
+                    EngagmentId = engagId,
+                    UserId = insertEngagmentClass.OwnerId
+                };
+                context.UserEngagmentTbs.Add(userEngagmentTb);
+                context.SaveChanges();
+
+                context.Database.ExecuteSqlRaw(
+                    "exec [dbo].[anlys_PrepareDefaultValues] @engagementID = {0}",
+                     engagmentTb.EngagmentId);
+                return Ok(engagId);                
+            }
+            catch(Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+        }
+
+        [HttpGet("sd")]
+        public IActionResult sd()
+        {
+            context.Database.ExecuteSqlRaw(
+                "exec [dbo].[anlys_PrepareDefaultValues] @engagementID = {0}",
+                3);
+            return Ok("Sdf");
+        }
+
+
+        [HttpPost]
+        [Route("Select/User/Engagment")]
+        public IActionResult SelectUserOrganization([FromForm]AllEngagmentByStatusClass allEngagmentByStatusClass)
+        {
+            try
+            {
+                if (allEngagmentByStatusClass.EngagmentStatus == null)
+                {
+                    var UsersCount = context.EngagmentUserViews.Where
+                        (x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId).Count();
+                    if (UsersCount > 0)
+                    {
+                        int PageCount = (UsersCount / allEngagmentByStatusClass.RowCount) + 1;
+
+                        var orgList = context.EngagmentUserViews.Where(x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId).ToList();
+                        List<UserEngagmentClass> orgstor = new List<UserEngagmentClass>();
+                        for (int i = 0; i < orgList.Count; i++)
+                        {
+
+                            var userIdList = context.EngagmentUserViews.Where(x => x.EngagmentId == orgList[i].EngagmentId).Select(e => new { e.UserId }).ToList();
+                            List<UserOrganizationAttriputeClass> userstor = new List<UserOrganizationAttriputeClass>();
+                            for (int z = 0; z < userIdList.Count; z++)
+                            {
+                                var user = context.UserTbs.Where(x => x.UserId == userIdList[z].UserId).FirstOrDefault();
+                                UserOrganizationAttriputeClass userOrganizationAttriputeClass = new UserOrganizationAttriputeClass()
+                                {
+                                    UserId = user.UserId,
+                                    UserName = user.UserName,
+                                    UserImage = user.UserImage
+                                };
+                                userstor.Add(userOrganizationAttriputeClass);
+                            }
+
+                            var org = context.EngagmentViews.Where(x => x.EngagmentId == orgList[i].EngagmentId).FirstOrDefault();
+
+                            UserEngagmentClass userOrganizationClass = new UserEngagmentClass()
+                            {
+                                EngagmentId = org.EngagmentId,
+                                EngagmentName = org.EngagmentName,
+                                EngagmentDescription = org.EngagmentDescription,
+                                EngagmentCreatedDate = DateTime.Parse(org.EngagmentCreatedDate.ToString()),
+                                EngagmentStatus = org.EngagmentStatus,
+                                OwnerName = org.UserName,
+                                Users = userstor
+                            };
+                            orgstor.Add(userOrganizationClass);
+                        }
+
+                        return Ok((new PagingClass
+                        {
+                            RawCount = UsersCount,
+                            PageCount = PageCount,
+
+                        }, orgstor.OrderByDescending(x => x.EngagmentId).Skip((allEngagmentByStatusClass.PageNumber - 1) * allEngagmentByStatusClass.RowCount).Take(allEngagmentByStatusClass.RowCount).ToList()));
+
+                    }
+                    else
+                        return NotFound("Not Exist Engagment");
+                }
+                else
+                {
+                    var UsersCount = context.EngagmentUserViews.Where
+                        (x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).Count();
+                    if (UsersCount > 0)
+                    {
+                        int PageCount = (UsersCount / allEngagmentByStatusClass.RowCount) + 1;
+
+                        var orgList = context.EngagmentUserViews.Where(x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).ToList();
+                        List<UserEngagmentClass> orgstor = new List<UserEngagmentClass>();
+                        for (int i = 0; i < orgList.Count; i++)
+                        {
+
+                            var userIdList = context.EngagmentUserViews.Where(x => x.EngagmentId == orgList[i].EngagmentId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).Select(e => new { e.UserId }).ToList();
+                            List<UserOrganizationAttriputeClass> userstor = new List<UserOrganizationAttriputeClass>();
+                            for (int z = 0; z < userIdList.Count; z++)
+                            {
+                                var user = context.UserTbs.Where(x => x.UserId == userIdList[z].UserId).FirstOrDefault();
+                                UserOrganizationAttriputeClass userOrganizationAttriputeClass = new UserOrganizationAttriputeClass()
+                                {
+                                    UserId = user.UserId,
+                                    UserName = user.UserName,
+                                    UserImage = user.UserImage
+                                };
+                                userstor.Add(userOrganizationAttriputeClass);
+                            }
+
+                            var org = context.EngagmentViews.Where(x => x.EngagmentId == orgList[i].EngagmentId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).FirstOrDefault();
+
+                            UserEngagmentClass userOrganizationClass = new UserEngagmentClass()
+                            {
+                                EngagmentId = org.EngagmentId,
+                                EngagmentName = org.EngagmentName,
+                                EngagmentDescription = org.EngagmentDescription,
+                                EngagmentCreatedDate = DateTime.Parse(org.EngagmentCreatedDate.ToString()),
+                                EngagmentStatus = org.EngagmentStatus,
+                                OwnerName = org.UserName,
+                                Users = userstor
+                            };
+                            orgstor.Add(userOrganizationClass);
+                        }
+
+                        return Ok((new PagingClass
+                        {
+                            RawCount = UsersCount,
+                            PageCount = PageCount,
+
+                        }, orgstor.OrderByDescending(x => x.EngagmentId).Skip((allEngagmentByStatusClass.PageNumber - 1) * allEngagmentByStatusClass.RowCount).Take(allEngagmentByStatusClass.RowCount).ToList()));
+
+                    }
+                    else
+                        return NotFound("Not Exist Engagment");
+                }
+
+
+            }
+            catch (Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+        }
+
+        [HttpGet]
+        [Route("Select/Engagment/{engagmentId}")]
+        public IActionResult SelectEngagment(int engagmentId)
+        {
+            try
+            {
+                var orgList = context.EngagmentTbs.
+                    Include(e => e.Owner).
+                    Include(e => e.UserEngagmentTbs).
+                    ThenInclude(e => e.User).
+                    FirstOrDefault(e => e.EngagmentId == engagmentId);
+                if (orgList != null)
+                {
+                    List<UserOrganizationAttriputeClass> stor = new List<UserOrganizationAttriputeClass>();
+                    for (int i = 0; i < orgList.UserEngagmentTbs.ToList().Count; i++)
+                    {
+                        var list = orgList.UserEngagmentTbs.ToList();
+                        UserOrganizationAttriputeClass organizationByIdAttriputeClass = new UserOrganizationAttriputeClass()
+                        {
+                            UserId = list[i].UserId,
+                            UserName = list[i].User.UserName,
+                            UserImage = list[i].User.UserImage,
+                        };
+                        stor.Add(organizationByIdAttriputeClass);
+                    }
+                    UserEngagmentClass organizationByIdAttriputeClass1 = new UserEngagmentClass()
+                    {
+                        EngagmentId = orgList.EngagmentId,
+                        EngagmentName = orgList.EngagmentName,
+                        EngagmentDescription = orgList.EngagmentDescription,
+                        EngagmentCreatedDate = DateTime.Parse(orgList.EngagmentCreatedDate.ToString()),
+                        EngagmentStatus = orgList.EngagmentStatus,
+                        OrganizationId = orgList.OrganizationId,
+                        Users = stor,
+                        OwnerName = orgList.Owner.UserName,
+                        FiscalStartDay = orgList.FiscalStartDay,
+                        FiscalStartMonth = orgList.FiscalStartMonth,
+                        FinancialMangmentSystemId = orgList.FinancialMangmentSystemId,
+                        CopmanySicid = orgList.CopmanySicid,
+                        ReportingFrequencyId = orgList.ReportingFrequencyId,
+                        
+                    };
+                    return Ok(organizationByIdAttriputeClass1);
+                }
+                else
+                    return BadRequest("Not found");
+            }
+            catch (Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+        }
+
+
+        [HttpGet]
+        [Route("GetEngagmentsByOwner/{ownerId}")]
+        public IActionResult GetEngagmentsByOwner(int ownerId)
+        {
+            try
+            {
+                var orgList = context.EngagmentTbs.
+                    Where(e => e.OwnerId == ownerId).Select(e=> new
+                    {
+                        e.EngagmentId,
+                        e.EngagmentName
+                    });            
+                    return Ok(orgList);             
+            }
+            catch (Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+        }
+
+
+        [HttpPost]
+        [Route("Insert/User/In/Engagment")]
+        public IActionResult InsertUserInEngagment([FromForm] AddUserEngagment userEngagmentTb)
+        {
+            try
+            {
+
+                context.UserEngagmentTbs.Add(new UserEngagmentTb
+                {
+                    EngagmentId=userEngagmentTb.EngagmentId,
+                    UserId=userEngagmentTb.UserId,
+                    
+                });
+                context.SaveChanges();
+                return Ok("User Inserted In Engagment");
+
+            }
+            catch (Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+
+        }
+
+        [HttpPatch]
+        [Route("Update/Engagment/{EngagmentId}")]
+        public IActionResult UpdateEngagment(int EngagmentId, [FromForm] UpdateEngagmentClass userUpdateClass)
+        {
+            try
+            {
+
+                var user = context.EngagmentTbs.Where(x => x.EngagmentId == EngagmentId).FirstOrDefault();
+                if (user != null)
+                {
+                    if (userUpdateClass.EngagmentName != null)
+                    {
+                        JsonPatchDocument UpdatedData = new JsonPatchDocument();
+                        UpdatedData.Replace("EngagmentName", userUpdateClass.EngagmentName);
+                        UpdatedData.ApplyTo(user);
+                        context.SaveChanges();
+                    }
+                    if (userUpdateClass.EngagmentDescription != null)
+                    {
+                        JsonPatchDocument UpdatedData = new JsonPatchDocument();
+                        UpdatedData.Replace("EngagmentDescription", userUpdateClass.EngagmentDescription);
+                        UpdatedData.ApplyTo(user);
+                        context.SaveChanges();
+                    }
+                    if (userUpdateClass.EngagmentCreatedDate != null)
+                    {
+                        JsonPatchDocument UpdatedData = new JsonPatchDocument();
+                        UpdatedData.Replace("EngagmentCreatedDate", userUpdateClass.EngagmentCreatedDate);
+                        UpdatedData.ApplyTo(user);
+                        context.SaveChanges();
+                    }
+                    if (userUpdateClass.EngagmentStatus != null)
+                    {
+                        JsonPatchDocument UpdatedData = new JsonPatchDocument();
+                        UpdatedData.Replace("EngagmentStatus", userUpdateClass.EngagmentStatus);
+                        UpdatedData.ApplyTo(user);
+                        context.SaveChanges();
+                    }
+                    if (userUpdateClass.EngagmentFile != null)
+                    {
+                        JsonPatchDocument UpdatedData = new JsonPatchDocument();
+                        UpdatedData.Replace("EngagmentFile", post_file(userUpdateClass.EngagmentFile));
+                        UpdatedData.ApplyTo(user);
+                        context.SaveChanges();
+                    }
+                    return Ok("Engagment Updated");
+                }
+                else
+                    return NotFound("This Engagment Not Exist");
+
+
+            }
+            catch (Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+        }
+
+        [HttpDelete]
+        [Route("Delete/Engagment/{EngagmentId}")]
+        public IActionResult DeleteEngagment(int EngagmentId)
+        {
+            try
+            {
+
+                var engagment = context.EngagmentTbs.Where(x => x.EngagmentId == EngagmentId).FirstOrDefault();
+                if (engagment != null)
+                {
+                    context.EngagmentTbs.Remove(engagment);
+                    context.SaveChanges();
+                    return Ok("Engagment Deleted");
+                }
+                else
+                    return NotFound("This engagment Not Exist");
+
+
+            }
+            catch (Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+        }
+
+
+        [HttpPost]
+        [Route("Upload/Engagment/File")]
+        public IActionResult UploadEngagmentFile([FromForm] PostGeneralLedgerListClass postGeneralLedgerListClass)
+        {
+            try
+            {
+                for (int i = 0; i < postGeneralLedgerListClass.GeneralLedgerList.Count; i++)
+                {
+                    var acoount = context.OriginalAccountNames.Where
+                        (x => x.AccountName == postGeneralLedgerListClass.GeneralLedgerList[i].Account &&
+                            x.Engagementid == postGeneralLedgerListClass.EngagementId).
+                        Select(e => new { e.Id }).FirstOrDefault();
+                    int accountMaped = 0;
+                    if (acoount == null)
+                    {
+                        OriginalAccountName originalAccountName = new OriginalAccountName()
+                        {
+                            Engagementid = postGeneralLedgerListClass.EngagementId,
+                            AccountName = postGeneralLedgerListClass.GeneralLedgerList[i].Account,
+                        };
+                        context.OriginalAccountNames.Add(originalAccountName);
+                        context.SaveChanges();
+                        accountMaped = originalAccountName.Id;
+                    }
+                    else
+                    {
+                        accountMaped = acoount.Id;
+                    }
+
+                    GeneralLedger generalLedger = new GeneralLedger()
+                    {
+
+                        EngagementId = postGeneralLedgerListClass.EngagementId,
+                        Credit = postGeneralLedgerListClass.GeneralLedgerList[i].Credit,
+                        Debit = postGeneralLedgerListClass.GeneralLedgerList[i].Debit,
+                        Date = postGeneralLedgerListClass.GeneralLedgerList[i].Date,
+                        Details = postGeneralLedgerListClass.GeneralLedgerList[i].Details,
+                        Nominal = postGeneralLedgerListClass.GeneralLedgerList[i].Nominal,
+                        Reference = postGeneralLedgerListClass.GeneralLedgerList[i].Reference,
+                        Notes = postGeneralLedgerListClass.GeneralLedgerList[i].Notes,
+                        Tt = postGeneralLedgerListClass.GeneralLedgerList[i].Tt,
+                        Account = accountMaped,
+
+                    };
+
+                    context.GeneralLedgers.Add(generalLedger);
+                    context.SaveChanges();
+                }
+                return Ok("File Uploaded");
+
+            }
+            catch (Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+        }
+
+        [HttpPost]
+        [Route("Insert/Account/Mapping")]
+        public IActionResult UploadEngagmentFile([FromBody] List<UpdateAccountMappingClass> updateAccountMappingClass)
+        {
+            //try
+            //{
+            for (int i = 0; i < updateAccountMappingClass.Count; i++)
+            {
+                var oreginal = context.OriginalAccountNames.Where(x => x.Id == updateAccountMappingClass[i].Id).FirstOrDefault();
+                if (oreginal != null)
+                {
+                    if (updateAccountMappingClass[i].MappedAccountId != null)
+                    {
+                        JsonPatchDocument UpdatedData = new JsonPatchDocument();
+                        UpdatedData.Replace("MappedAccountId", updateAccountMappingClass[i].MappedAccountId);
+                        UpdatedData.ApplyTo(oreginal);
+                        context.SaveChanges();
+                    }
+                    if (updateAccountMappingClass[i].Tags != null)
+                    {
+                        JsonPatchDocument UpdatedData = new JsonPatchDocument();
+                        UpdatedData.Replace("Tags", updateAccountMappingClass[i].Tags);
+                        UpdatedData.ApplyTo(oreginal);
+                        context.SaveChanges();
+                    }
+                }
+
+            }
+            return Ok("Account Mapping Uploaded");
+
+            //}
+            //catch (Exception)
+            //{
+            //    return BadRequest("This Process Failed");
+            //}
+        }
+
+        [HttpGet]
+        [Route("Select/SusKeywords")]
+        public IActionResult SelectSusKeywords()
+        {
+            return Ok(context.DefaultSusKeywords.ToList());
+        }
+
+        [HttpPost]
+        [Route("Insert/Manual/Entries")]
+        public IActionResult InsertManualEntries([FromBody] PostListManualEntries postListManualEntries)
+        {
+            List<ManualEntry> stor = new List<ManualEntry>();
+            for (int i = 0; i < postListManualEntries.ManualEntries.Count; i++)
+            {
+                ManualEntry manualEntry = new ManualEntry()
+                {
+                    EngId = postListManualEntries.ManualEntries[i].EngId,
+                    ColName = postListManualEntries.ManualEntries[i].ColName,
+                    Entries = postListManualEntries.ManualEntries[i].Entries,
+                    ExcludedKeywords = postListManualEntries.ManualEntries[i].ExcludedKeywords,
+                };
+                stor.Add(manualEntry);
+                context.ManualEntries.Add(manualEntry);
+                context.SaveChanges();
+            }
+
+            var susWord = context.DefaultSusKeywords.Where(x => x.Id == 1).FirstOrDefault();
+            if (susWord != null)
+            {
+                JsonPatchDocument UpdatedData = new JsonPatchDocument();
+                UpdatedData.Replace("Keywords", postListManualEntries.SuspeciousWords);
+                UpdatedData.ApplyTo(susWord);
+                context.SaveChanges();
+            }
+            return Ok("List Uploaded ");
+        }
+        [HttpGet("GetCategories")]
+        public IActionResult GetCategories(int engagmentId)
+        {
+            var results = context.Categories.FromSqlRaw(
+             "exec qry_getMappedAccountsByEngagement @engagementID = {0}",
+             engagmentId);
+            return Ok(results.AsEnumerable().ToList());
+        }
+    }
+}
+
