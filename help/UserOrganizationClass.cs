@@ -14,6 +14,8 @@ namespace AciesManagmentProject.help
         public bool? OrganizationStatus { get; set; }
         public string OwnerName { get; set; }
         public int EngagmentCount { get; set; }
+        public int? Code { get; set; }
+        public int? SIC { get; set; }
         public List<UserOrganizationAttriputeClass> Users { get; set; }
 
     }

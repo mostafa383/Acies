@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace AciesManagmentProject.Controllers
 {
     [Route("api/[controller]"), ApiController, Authorize]
-    public class VisualizationsController(AciesContext context) : ControllerBase
+    public class VisualizationsController(DbAciesContext context) : ControllerBase
     {
 
         [HttpGet]

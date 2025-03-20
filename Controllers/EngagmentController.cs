@@ -7,18 +7,16 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace AciesManagmentProject.Controllers
 {
-    [Route("api/[controller]"),Authorize]
+    [Route("api/[controller]"), Authorize]
     [ApiController]
-    public class EngagmentController(AciesContext context, IWebHostEnvironment _environment) : ControllerBase
+    public class EngagmentController(DbAciesContext context, IWebHostEnvironment _environment) : ControllerBase
     {
         //[Route("IWebHostEnvironment")]
         //public class ServerFiles
@@ -65,17 +63,18 @@ namespace AciesManagmentProject.Controllers
                 {
                     EngagmentName = insertEngagmentClass.EngagmentName,
                     EngagmentDescription = insertEngagmentClass.EngagmentDescription,
-                    EngagmentCreatedDate = DateTime.Now.Date,
+                    EngagmentCreatedDate = DateOnly.FromDateTime(DateTime.Now.Date),
                     EngagmentFile = post_file(insertEngagmentClass.EngagmentFile),
                     EngagmentStatus = true,
                     FinancialMangmentSystemId = insertEngagmentClass.FinancialMangmentSystemId,
                     OrganizationId = insertEngagmentClass.OrganizationId,
                     ReportingFrequencyId = insertEngagmentClass.ReportingFrequencyId,
                     OwnerId = insertEngagmentClass.OwnerId,
-                    CopmanySicid = insertEngagmentClass.CopmanySicid,
+                    IndustryCode = insertEngagmentClass.Code,
                     FiscalStartDay = insertEngagmentClass.FiscalStartDay,
                     FiscalStartMonth = insertEngagmentClass.FiscalStartMonth,
-                    Type = insertEngagmentClass.Type
+                    Type = insertEngagmentClass.Type,
+                    Currency=insertEngagmentClass.CurrencyId
                 };
                 if (insertEngagmentClass.LibraryId is not null)
                     engagmentTb.LibraryId = insertEngagmentClass.LibraryId.Value;
@@ -93,9 +92,9 @@ namespace AciesManagmentProject.Controllers
                 context.Database.ExecuteSqlRaw(
                     "exec [dbo].[anlys_PrepareDefaultValues] @engagementID = {0}",
                      engagmentTb.EngagmentId);
-                return Ok(engagId);                
+                return Ok(engagId);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return BadRequest("This Process Failed");
             }
@@ -113,7 +112,7 @@ namespace AciesManagmentProject.Controllers
 
         [HttpPost]
         [Route("Select/User/Engagment")]
-        public IActionResult SelectUserOrganization([FromForm]AllEngagmentByStatusClass allEngagmentByStatusClass)
+        public IActionResult SelectUserOrganization([FromForm] AllEngagmentByStatusClass allEngagmentByStatusClass)
         {
             try
             {
@@ -239,21 +238,25 @@ namespace AciesManagmentProject.Controllers
             try
             {
                 var orgList = context.EngagmentTbs.
+                    Include(e => e.IndustryCodeNavigation).
                     Include(e => e.Owner).
-                    Include(e => e.UserEngagmentTbs).
-                    ThenInclude(e => e.User).
+                    Include(e => e.CurrencyNavigation).
+                    //Include(e => e.UserEngagmentTbs).
+                    //ThenInclude(e => e.User).
                     FirstOrDefault(e => e.EngagmentId == engagmentId);
                 if (orgList != null)
                 {
+                    var usersEngagment = context.UserEngagmentTbs.
+                        Include(e => e.User).
+                        Where(e => e.EngagmentId == engagmentId).ToList();
                     List<UserOrganizationAttriputeClass> stor = new List<UserOrganizationAttriputeClass>();
-                    for (int i = 0; i < orgList.UserEngagmentTbs.ToList().Count; i++)
+                    for (int i = 0; i < usersEngagment.Count; i++)
                     {
-                        var list = orgList.UserEngagmentTbs.ToList();
                         UserOrganizationAttriputeClass organizationByIdAttriputeClass = new UserOrganizationAttriputeClass()
                         {
-                            UserId = list[i].UserId,
-                            UserName = list[i].User.UserName,
-                            UserImage = list[i].User.UserImage,
+                            UserId = usersEngagment[i].UserId,
+                            UserName = usersEngagment[i].User.UserName,
+                            UserImage = usersEngagment[i].User.UserImage,
                         };
                         stor.Add(organizationByIdAttriputeClass);
                     }
@@ -270,9 +273,13 @@ namespace AciesManagmentProject.Controllers
                         FiscalStartDay = orgList.FiscalStartDay,
                         FiscalStartMonth = orgList.FiscalStartMonth,
                         FinancialMangmentSystemId = orgList.FinancialMangmentSystemId,
-                        CopmanySicid = orgList.CopmanySicid,
+                        CopmanySicid = orgList?.IndustryCodeNavigation?.CompanySic,
                         ReportingFrequencyId = orgList.ReportingFrequencyId,
-                        
+                        CurrrencyId=orgList.CurrencyNavigation?.Id,
+                        CurrrencyName=orgList.CurrencyNavigation?.Name,
+                        CurrrencyShortName=orgList.CurrencyNavigation?.ShortName,
+                        CurrrencySymbol=orgList.CurrencyNavigation?.Symbol,
+                        Code=orgList.IndustryCode
                     };
                     return Ok(organizationByIdAttriputeClass1);
                 }
@@ -293,12 +300,12 @@ namespace AciesManagmentProject.Controllers
             try
             {
                 var orgList = context.EngagmentTbs.
-                    Where(e => e.OwnerId == ownerId).Select(e=> new
+                    Where(e => e.OwnerId == ownerId).Select(e => new
                     {
                         e.EngagmentId,
                         e.EngagmentName
-                    });            
-                    return Ok(orgList);             
+                    });
+                return Ok(orgList);
             }
             catch (Exception)
             {
@@ -316,9 +323,9 @@ namespace AciesManagmentProject.Controllers
 
                 context.UserEngagmentTbs.Add(new UserEngagmentTb
                 {
-                    EngagmentId=userEngagmentTb.EngagmentId,
-                    UserId=userEngagmentTb.UserId,
-                    
+                    EngagmentId = userEngagmentTb.EngagmentId,
+                    UserId = userEngagmentTb.UserId,
+
                 });
                 context.SaveChanges();
                 return Ok("User Inserted In Engagment");
@@ -374,6 +381,16 @@ namespace AciesManagmentProject.Controllers
                         JsonPatchDocument UpdatedData = new JsonPatchDocument();
                         UpdatedData.Replace("EngagmentFile", post_file(userUpdateClass.EngagmentFile));
                         UpdatedData.ApplyTo(user);
+                        context.SaveChanges();
+                    }
+                    if (userUpdateClass.Code != null)
+                    {
+                        user.IndustryCode = userUpdateClass.Code;
+                        context.SaveChanges();
+                    }
+                    if (userUpdateClass.CurrencyId != null)
+                    {
+                        user.Currency = userUpdateClass.CurrencyId;
                         context.SaveChanges();
                     }
                     return Ok("Engagment Updated");
@@ -532,6 +549,11 @@ namespace AciesManagmentProject.Controllers
                 };
                 stor.Add(manualEntry);
                 context.ManualEntries.Add(manualEntry);
+                var engagment = context.EngagmentTbs.FirstOrDefault(e=>e.EngagmentId== postListManualEntries.ManualEntries[i].EngId);
+                if(engagment is not null && postListManualEntries.ManualEntries[i].CurrencyId is not null)
+                {
+                    engagment.Currency = postListManualEntries.ManualEntries[i].CurrencyId;
+                }
                 context.SaveChanges();
             }
 
@@ -552,6 +574,78 @@ namespace AciesManagmentProject.Controllers
              "exec qry_getMappedAccountsByEngagement @engagementID = {0}",
              engagmentId);
             return Ok(results.AsEnumerable().ToList());
+        }
+
+        [HttpGet("GetEngamgenetCPs"), AllowAnonymous]
+        public IActionResult GetEngamgenetCPs(int engID = 9)
+        {
+            var results = context.Ress.FromSqlRaw(
+             "exec GetEngamgenetCPs @engID={0}", engID);
+            return Ok(results.ToList()
+                .GroupBy(e => new { e.ControlPointId, e.ControlPointValue, e.ControlPointName })
+            .Select(e => new GetECP
+            {
+                ControlPointId = e.Key.ControlPointId,
+                ControlPointName = e.Key.ControlPointName,
+                ControlPointValue = e.Key.ControlPointValue,
+                Cases = e.Select(ee => new GetECPC
+                {
+                    ControlPointCaseId = ee.ControlPointCaseId,
+                    ControlPointCaseName = ee.ControlPointCaseName,
+                    ControlPointCaseValue = ee.ControlPointCaseValue,
+                }).ToList()
+            }));
+        }
+
+        [HttpGet("GetCurrencies")]
+        public IActionResult GetCurrencies() =>
+            Ok(context.Currencies.Select(e => new
+            {
+                e.Id,
+                e.Symbol,
+                e.Name,
+                e.ShortName
+            }));
+
+        [HttpPost("EditCP")]
+        public IActionResult EditCP([FromBody] List<EditControlPoint> dto)
+        {
+            try
+            {
+                foreach (var item in dto)
+                {
+                    var cp = context.ControlPoints.FirstOrDefault(e => e.ControlPointId == item.Id);
+                    if (cp is not null)
+                        cp.ControlPointValue = item.Value;
+                }
+                context.SaveChanges();
+                return Ok("Updated");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpPost("EditCPCase")]
+        public IActionResult EditCPCase([FromBody] List<EditControlPoint> dto)
+        {
+            try
+            {
+                foreach (var item in dto)
+                {
+                    var cp = context.ControlPointCases.FirstOrDefault(e => e.ControlPointCaseId == item.Id);
+                    if (cp is not null)
+                        cp.ControlPointCaseValue = item.Value;
+                }
+                context.SaveChanges();
+                return Ok("Updated");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

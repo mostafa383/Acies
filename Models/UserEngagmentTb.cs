@@ -11,7 +11,5 @@ public partial class UserEngagmentTb
 
     public int EngagmentId { get; set; }
 
-    public virtual EngagmentTb Engagment { get; set; }
-
     public virtual UserTb User { get; set; }
 }

@@ -32,6 +32,4 @@ public partial class GeneralLedger
     public double? Riskpercent { get; set; }
 
     public virtual OriginalAccountName AccountNavigation { get; set; }
-
-    public virtual EngagmentTb Engagement { get; set; }
 }

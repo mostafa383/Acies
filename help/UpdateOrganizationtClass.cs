@@ -11,5 +11,7 @@ namespace AciesManagmentProject.help
         public string? OrganizationDescription { get; set; }
         public DateTime? OrganizationCreatedDate { get; set; }
         public bool? OrganizationStatus { get; set; }
+        public int? SIC { get; set; }
+        public int? Code { get; set; }
     }
 }

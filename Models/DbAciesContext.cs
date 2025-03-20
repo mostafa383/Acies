@@ -4,20 +4,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AciesManagmentProject.Models;
 
-public partial class AciesContext : DbContext
+public partial class DbAciesContext : DbContext
 {
-    public AciesContext()
+    public DbAciesContext()
     {
     }
 
-    public AciesContext(DbContextOptions<AciesContext> options)
+    public DbAciesContext(DbContextOptions<DbAciesContext> options)
         : base(options)
     {
     }
- 
-    public virtual DbSet<AccountsPayable> AccountsPayables { get; set; }
 
     public virtual DbSet<cashholt> cashholts { get; set; }
+    public virtual DbSet<Res> Ress { get; set; }
     public virtual DbSet<breakdownYearly> breakdownYearlys { get; set; }
     public virtual DbSet<account_monthly> account_monthlys { get; set; }
     public virtual DbSet<Category> Categories { get; set; }
@@ -31,6 +30,8 @@ public partial class AciesContext : DbContext
     public virtual DbSet<rsk_by_account> rsk_by_accounts { get; set; }
     public virtual DbSet<viz_baddebt> viz_baddebts { get; set; }
     public virtual DbSet<FinStatSum> FinStatSums { get; set; }
+
+    public virtual DbSet<AccountsPayable> AccountsPayables { get; set; }
 
     public virtual DbSet<AccountsReceivable> AccountsReceivables { get; set; }
 
@@ -60,7 +61,13 @@ public partial class AciesContext : DbContext
 
     public virtual DbSet<CopmanySictb> CopmanySictbs { get; set; }
 
+    public virtual DbSet<CpView> CpViews { get; set; }
+
+    public virtual DbSet<CpViewFull> CpViewFulls { get; set; }
+
     public virtual DbSet<CpsCount> CpsCounts { get; set; }
+
+    public virtual DbSet<Currency> Currencies { get; set; }
 
     public virtual DbSet<DefaultControlPoint> DefaultControlPoints { get; set; }
 
@@ -68,7 +75,7 @@ public partial class AciesContext : DbContext
 
     public virtual DbSet<DefaultSusKeyword> DefaultSusKeywords { get; set; }
 
-    public virtual DbSet< EngagmentTb> EngagmentTbs { get; set; }
+    public virtual DbSet<EngagmentTb> EngagmentTbs { get; set; }
 
     public virtual DbSet<EngagmentUserView> EngagmentUserViews { get; set; }
 
@@ -118,6 +125,8 @@ public partial class AciesContext : DbContext
 
     public virtual DbSet<SuspeciousWord> SuspeciousWords { get; set; }
 
+    public virtual DbSet<TmpMapping> TmpMappings { get; set; }
+
     public virtual DbSet<UserEngagmentTb> UserEngagmentTbs { get; set; }
 
     public virtual DbSet<UserOrganizationTb> UserOrganizationTbs { get; set; }
@@ -125,25 +134,28 @@ public partial class AciesContext : DbContext
     public virtual DbSet<UserTb> UserTbs { get; set; }
 
     public virtual DbSet<Wordstoremove> Wordstoremoves { get; set; }
+
+  
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<cashholt>().HasNoKey();
-        modelBuilder.Entity<account_monthly>().HasNoKey();
-        modelBuilder.Entity<FinStatSum>().HasNoKey();
-        modelBuilder.Entity<Incomeasset>().HasNoKey();
-        modelBuilder.Entity<Class>().HasNoKey();
-        modelBuilder.Entity<BalanceCheckResult>().HasNoKey();
-        modelBuilder.Entity<TotalLevelResult>().HasNoKey();
-        modelBuilder.Entity<Breakdown>().HasNoKey();
-        modelBuilder.Entity<breakdownYearly>().HasNoKey();
-        modelBuilder.Entity<viz_baddebt>().HasNoKey();
-        modelBuilder.Entity<rsk_by_account>().HasNoKey();
-        modelBuilder.Entity<ControlPointSummary>().HasNoKey();
-        modelBuilder.Entity<Intangible>().HasNoKey();
-
         modelBuilder.Entity<AccountsPayable>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Accounts__3213E83F7B1F1B2B");
+            modelBuilder.Entity<cashholt>().HasNoKey();
+            modelBuilder.Entity<Res>().HasNoKey();
+            modelBuilder.Entity<account_monthly>().HasNoKey();
+            modelBuilder.Entity<FinStatSum>().HasNoKey();
+            modelBuilder.Entity<Incomeasset>().HasNoKey();
+            modelBuilder.Entity<Class>().HasNoKey();
+            modelBuilder.Entity<BalanceCheckResult>().HasNoKey();
+            modelBuilder.Entity<TotalLevelResult>().HasNoKey();
+            modelBuilder.Entity<Breakdown>().HasNoKey();
+            modelBuilder.Entity<breakdownYearly>().HasNoKey();
+            modelBuilder.Entity<viz_baddebt>().HasNoKey();
+            modelBuilder.Entity<rsk_by_account>().HasNoKey();
+            modelBuilder.Entity<ControlPointSummary>().HasNoKey();
+            modelBuilder.Entity<Intangible>().HasNoKey();
+            modelBuilder.Entity<Category>().HasNoKey();
+            entity.HasKey(e => e.Id).HasName("PK__Accounts__3213E83FF5DA9644");
 
             entity.ToTable("Accounts_Payable");
 
@@ -165,7 +177,7 @@ public partial class AciesContext : DbContext
 
         modelBuilder.Entity<AccountsReceivable>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Accounts__3213E83FC7E4331D");
+            entity.HasKey(e => e.Id).HasName("PK__Accounts__3213E83F348B2CB5");
 
             entity.ToTable("Accounts_Receivable");
 
@@ -362,6 +374,28 @@ public partial class AciesContext : DbContext
                 .HasColumnName("copmanySICName");
         });
 
+        modelBuilder.Entity<CpView>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("CP_View");
+
+            entity.Property(e => e.ControlPointName)
+                .IsRequired()
+                .HasMaxLength(200);
+            entity.Property(e => e.EngagementId).HasColumnName("engagementID");
+        });
+
+        modelBuilder.Entity<CpViewFull>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("CP_View_FULL");
+
+            entity.Property(e => e.ControlPointCaseName).HasMaxLength(200);
+            entity.Property(e => e.ControlPointName).HasMaxLength(200);
+        });
+
         modelBuilder.Entity<CpsCount>(entity =>
         {
             entity
@@ -372,6 +406,20 @@ public partial class AciesContext : DbContext
                 .IsRequired()
                 .HasMaxLength(200);
             entity.Property(e => e.Transcount).HasColumnName("transcount");
+        });
+
+        modelBuilder.Entity<Currency>(entity =>
+        {
+            entity.ToTable("Currency");
+
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.ShortName).HasMaxLength(5);
+            entity.Property(e => e.Symbol)
+                .HasMaxLength(1)
+                .IsFixedLength();
         });
 
         modelBuilder.Entity<DefaultControlPoint>(entity =>
@@ -417,7 +465,6 @@ public partial class AciesContext : DbContext
             entity.ToTable("EngagmentTB");
 
             entity.Property(e => e.EngagmentId).HasColumnName("engagmentId");
-            entity.Property(e => e.CopmanySicid).HasColumnName("copmanySICId");
             entity.Property(e => e.EngagmentCreatedDate).HasColumnName("engagmentCreatedDate");
             entity.Property(e => e.EngagmentDescription).HasColumnName("engagmentDescription");
             entity.Property(e => e.EngagmentFile).HasColumnName("engagmentFile");
@@ -436,19 +483,21 @@ public partial class AciesContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("type");
 
-            entity.HasOne(d => d.CopmanySic).WithMany(p => p.EngagmentTbs)
-                .HasForeignKey(d => d.CopmanySicid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_EngagmentTB_CopmanySICTB");
+            entity.HasOne(d => d.CurrencyNavigation).WithMany(p => p.EngagmentTbs)
+                .HasForeignKey(d => d.Currency)
+                .HasConstraintName("FK_EngagmentTB_Currency");
 
             entity.HasOne(d => d.FinancialMangmentSystem).WithMany(p => p.EngagmentTbs)
                 .HasForeignKey(d => d.FinancialMangmentSystemId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EngagmentTB_FinancialMangmentSystemTB");
 
+            entity.HasOne(d => d.IndustryCodeNavigation).WithMany(p => p.EngagmentTbs)
+                .HasForeignKey(d => d.IndustryCode)
+                .HasConstraintName("FK_EngagmentTB_Industry");
+
             entity.HasOne(d => d.Library).WithMany(p => p.EngagmentTbs)
                 .HasForeignKey(d => d.LibraryId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_EngagmentTB_LibraryTB");
 
             entity.HasOne(d => d.Organization).WithMany(p => p.EngagmentTbs)
@@ -640,10 +689,6 @@ public partial class AciesContext : DbContext
 
             entity.ToTable("General_Ledger");
 
-            entity.HasIndex(e => e.Credit, "idx_GeneralLedger_credit");
-
-            entity.HasIndex(e => e.Debit, "idx_GeneralLedger_debit");
-
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Date).HasColumnType("datetime");
             entity.Property(e => e.Details).HasMaxLength(200);
@@ -665,10 +710,6 @@ public partial class AciesContext : DbContext
             entity.HasOne(d => d.AccountNavigation).WithMany(p => p.GeneralLedgers)
                 .HasForeignKey(d => d.Account)
                 .HasConstraintName("FK_General_Ledger_Original_Account_Names");
-
-            entity.HasOne(d => d.Engagement).WithMany(p => p.GeneralLedgers)
-                .HasForeignKey(d => d.EngagementId)
-                .HasConstraintName("FK_General_Ledger_EngagmentTB");
         });
 
         modelBuilder.Entity<GeneralLedger1>(entity =>
@@ -695,7 +736,7 @@ public partial class AciesContext : DbContext
 
         modelBuilder.Entity<GeneralLedgerInternal>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__General___3213E83F88ECCDC4");
+            entity.HasKey(e => e.Id).HasName("PK__General___3213E83F56EC9CC1");
 
             entity.ToTable("General_Ledger_Internal");
 
@@ -717,14 +758,19 @@ public partial class AciesContext : DbContext
 
         modelBuilder.Entity<Industry>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Industry");
+            entity.HasKey(e => e.Code);
 
+            entity.ToTable("Industry");
+
+            entity.Property(e => e.Code).ValueGeneratedNever();
             entity.Property(e => e.CompanySic).HasColumnName("CompanySIC");
             entity.Property(e => e.Description)
                 .IsRequired()
                 .HasMaxLength(200);
+
+            entity.HasOne(d => d.CompanySicNavigation).WithMany(p => p.Industries)
+                .HasForeignKey(d => d.CompanySic)
+                .HasConstraintName("FK_Industry_CompanySIC1");
         });
 
         modelBuilder.Entity<LibraryTb>(entity =>
@@ -822,7 +868,8 @@ public partial class AciesContext : DbContext
             entity.Property(e => e.Account)
                 .IsRequired()
                 .HasColumnType("ntext");
-            entity.Property(e => e.Category).HasMaxLength(100);
+            entity.Property(e => e.Category).HasColumnType("ntext");
+            entity.Property(e => e.FullPath).HasColumnType("ntext");
         });
 
         modelBuilder.Entity<OrganizationTb>(entity =>
@@ -832,7 +879,7 @@ public partial class AciesContext : DbContext
             entity.ToTable("OrganizationTB");
 
             entity.Property(e => e.OrganizationId).HasColumnName("organizationId");
-            entity.Property(e => e.CopmanySicid).HasColumnName("copmanySICId");
+            entity.Property(e => e.CompanySicid).HasColumnName("CompanySICid");
             entity.Property(e => e.FinancialMangmentSystemId).HasColumnName("financialMangmentSystemId");
             entity.Property(e => e.OrganizationCreatedDate).HasColumnName("organizationCreatedDate");
             entity.Property(e => e.OrganizationDescription).HasColumnName("organizationDescription");
@@ -844,15 +891,13 @@ public partial class AciesContext : DbContext
             entity.Property(e => e.OwnerId).HasColumnName("ownerId");
             entity.Property(e => e.ReportingFrequencyId).HasColumnName("reportingFrequencyId");
 
-            entity.HasOne(d => d.CopmanySic).WithMany(p => p.OrganizationTbs)
-                .HasForeignKey(d => d.CopmanySicid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OrganizationTB_CopmanySICTB");
+            entity.HasOne(d => d.CompanySic).WithMany(p => p.OrganizationTbs)
+                .HasForeignKey(d => d.CompanySicid)
+                .HasConstraintName("FK_OrganizationTB_CompanySIC");
 
-            entity.HasOne(d => d.FinancialMangmentSystem).WithMany(p => p.OrganizationTbs)
-                .HasForeignKey(d => d.FinancialMangmentSystemId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_OrganizationTB_FinancialMangmentSystemTB");
+            entity.HasOne(d => d.IndustryCodeNavigation).WithMany(p => p.OrganizationTbs)
+                .HasForeignKey(d => d.IndustryCode)
+                .HasConstraintName("FK_OrganizationTB_Industry");
 
             entity.HasOne(d => d.Owner).WithMany(p => p.OrganizationTbs)
                 .HasForeignKey(d => d.OwnerId)
@@ -932,11 +977,6 @@ public partial class AciesContext : DbContext
                 .HasColumnName("account_name");
             entity.Property(e => e.Engagementid).HasColumnName("engagementid");
             entity.Property(e => e.MappedAccountId).HasColumnName("mapped_account_id");
-
-            entity.HasOne(d => d.Engagement).WithMany(p => p.OriginalAccountNames)
-                .HasForeignKey(d => d.Engagementid)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Original_Account_Names_EngagmentTB");
 
             entity.HasOne(d => d.MappedAccount).WithMany(p => p.OriginalAccountNames)
                 .HasForeignKey(d => d.MappedAccountId)
@@ -1045,6 +1085,18 @@ public partial class AciesContext : DbContext
                 .HasMaxLength(40);
         });
 
+        modelBuilder.Entity<TmpMapping>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("tmp_mapping");
+
+            entity.Property(e => e.Category)
+                .IsRequired()
+                .HasColumnType("ntext");
+            entity.Property(e => e.Id).HasColumnName("ID");
+        });
+
         modelBuilder.Entity<UserEngagmentTb>(entity =>
         {
             entity.HasKey(e => e.UserEngagmentId);
@@ -1054,11 +1106,6 @@ public partial class AciesContext : DbContext
             entity.Property(e => e.UserEngagmentId).HasColumnName("userEngagmentId");
             entity.Property(e => e.EngagmentId).HasColumnName("engagmentId");
             entity.Property(e => e.UserId).HasColumnName("userId");
-
-            entity.HasOne(d => d.Engagment).WithMany(p => p.UserEngagmentTbs)
-                .HasForeignKey(d => d.EngagmentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_UserEngagmentTB_EngagmentTB");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserEngagmentTbs)
                 .HasForeignKey(d => d.UserId)
@@ -1109,7 +1156,7 @@ public partial class AciesContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("userPhone");
         });
-        modelBuilder.Entity<Category>().HasNoKey();
+
         modelBuilder.Entity<Wordstoremove>(entity =>
         {
             entity

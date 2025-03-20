@@ -13,7 +13,7 @@ namespace AciesManagmentProject
     {
         private readonly IConfiguration _configuration;
 
-        public async Task SendData(AciesContext context)
+        public async Task SendData(DbAciesContext context)
         {
             var engagementID = int.Parse(Context.GetHttpContext().Request.Query["engagementID"]);
             SqlParameter param1 = new SqlParameter("@engagementID", SqlDbType.Int);

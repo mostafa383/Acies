@@ -10,4 +10,10 @@ public partial class Industry
     public string Description { get; set; }
 
     public int? CompanySic { get; set; }
+
+    public virtual CompanySic CompanySicNavigation { get; set; }
+
+    public virtual ICollection<EngagmentTb> EngagmentTbs { get; set; } = new List<EngagmentTb>();
+
+    public virtual ICollection<OrganizationTb> OrganizationTbs { get; set; } = new List<OrganizationTb>();
 }

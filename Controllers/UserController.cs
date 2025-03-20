@@ -7,11 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace AciesManagmentProject.Controllers
 {
@@ -19,9 +16,9 @@ namespace AciesManagmentProject.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private AciesContext context;
+        private DbAciesContext context;
         private IWebHostEnvironment _environment;
-        public UserController(AciesContext context, IWebHostEnvironment _environment)
+        public UserController(DbAciesContext context, IWebHostEnvironment _environment)
         {
             this.context = context;
             this._environment = _environment;
@@ -85,7 +82,7 @@ namespace AciesManagmentProject.Controllers
                     UserName = userTb.UserName,
                     UserPassword = userTb.UserPassword,
                     UserPhone = userTb.UserPhone,
-                    UserImage = image==""?null:image,
+                    UserImage = image == "" ? null : image,
                 });
                 context.SaveChanges();
                 return Ok("User Acount Created");
@@ -163,8 +160,8 @@ namespace AciesManagmentProject.Controllers
         }
 
         [HttpPost]
-        [Route("User/Login"),AllowAnonymous]
-        public IActionResult UserLogin([FromForm] UserLoginClass userLoginClass,IJwt jwt)
+        [Route("User/Login"), AllowAnonymous]
+        public IActionResult UserLogin([FromForm] UserLoginClass userLoginClass, IJwt jwt)
         {
             try
             {
@@ -173,7 +170,16 @@ namespace AciesManagmentProject.Controllers
                     (x => x.UserEmail == userLoginClass.UserEmail && x.UserPassword == userLoginClass.UserPassword);
                 if (user != null)
                 {
-                    return Ok(jwt.CreateToken(user));
+                    return Ok(new loginDto
+                    {
+                        token = jwt.CreateToken(user),
+                        UserId = user.UserId,
+                        UserEmail=user.UserEmail,
+                        UserImage=user.UserImage is null?"": user.UserImage,
+                        UserName=user.UserName,
+                        UserPhone=user.UserPhone is null?"":user.UserPhone
+                    });
+
                 }
                 else
                     return NotFound("Email OR Password Is Wrong");

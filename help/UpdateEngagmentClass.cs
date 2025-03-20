@@ -17,6 +17,8 @@ namespace AciesManagmentProject.help
         public int? OrganizationId { get; set; }
         public int? CopmanySicid { get; set; }
         public int? ReportingFrequencyId { get; set; }
+        public int? CurrencyId { get; set; }
+        public int? Code { get; set; }
         public int? FinancialMangmentSystemId { get; set; }
         public int? LibraryId { get; set; }
     }

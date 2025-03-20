@@ -20,11 +20,11 @@ namespace AciesManagmentProject.Controllers
     [ApiController]
     public class ScriptController : ControllerBase
     {
-        private readonly AciesContext context;
+        private readonly DbAciesContext context;
         
         private readonly IConfiguration _configuration;
         
-        public ScriptController(IConfiguration configuration, AciesContext context)
+        public ScriptController(IConfiguration configuration, DbAciesContext context)
         {
             _configuration = configuration;
             this.context = context;

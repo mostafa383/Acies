@@ -8,6 +8,8 @@ namespace AciesManagmentProject.help
     public class OrganizationByIdAttriputeClass
     {
         public int OrganizationId { get; set; }
+        public int? Code { get; set; }
+        public int? SIC { get; set; }
         public string OrganizationName { get; set; }
         public string OrganizationDescription { get; set; }
         public DateTime OrganizationCreatedDate { get; set; }

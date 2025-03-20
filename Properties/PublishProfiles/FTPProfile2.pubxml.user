@@ -6,13 +6,13 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
   <PropertyGroup>
     <TimeStampOfAssociatedLegacyPublishXmlFile />
     <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAju7kKYYX/k6iB0mEXOnU8gAAAAACAAAAAAAQZgAAAAEAACAAAAAlJISdzY2Lf4tA6qxIzXWADEHpiuAraK9PKuu/v3kSlQAAAAAOgAAAAAIAACAAAABlLbYQjCZcbxO3ZdlMAQhqLWmlROkLOxmD31lbVZ4I2SAAAAAfxOaenv3lcrZ3MZxaPVrpQIq0h4LRq0tiP3mJlUwGZEAAAADCsIXgt9Y8lnT4L65c0wsEp24u9CSpIvgB4SCN+S+ry6WQE3xAMLcgLzRJAf8kGH1ntDZFeEPKtoL8T3LpHHE1</EncryptedPassword>
-    <History>False|2025-02-03T20:09:29.3281476Z;False|2025-02-03T22:07:25.2126473+02:00;False|2025-02-03T22:06:44.2046697+02:00;False|2025-02-03T22:05:12.6331667+02:00;False|2025-02-03T21:57:47.9164330+02:00;False|2025-02-03T21:57:22.3819439+02:00;False|2025-02-03T21:56:32.0753481+02:00;False|2025-02-03T21:55:28.5290156+02:00;</History>
+    <History>False|2025-03-14T19:16:15.3147562Z;False|2025-02-03T22:09:29.3281476+02:00;False|2025-02-03T22:07:25.2126473+02:00;False|2025-02-03T22:06:44.2046697+02:00;False|2025-02-03T22:05:12.6331667+02:00;False|2025-02-03T21:57:47.9164330+02:00;False|2025-02-03T21:57:22.3819439+02:00;False|2025-02-03T21:56:32.0753481+02:00;False|2025-02-03T21:55:28.5290156+02:00;</History>
     <LastFailureDetails />
     <_PublishTargetUrl>ftp://win6052.site4now.net</_PublishTargetUrl>
   </PropertyGroup>
   <ItemGroup>
     <File Include="AciesManagmentProject.deps.json">
-      <publishTime>02/03/2025 21:57:42</publishTime>
+      <publishTime>03/14/2025 21:14:39</publishTime>
     </File>
     <File Include="AciesManagmentProject.exe">
       <publishTime>02/03/2025 21:57:33</publishTime>

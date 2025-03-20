@@ -16,10 +16,11 @@ namespace AciesManagmentProject.help
         public IFormFile EngagmentFile { get; set; }
         public int OwnerId { get; set; }
         public int OrganizationId { get; set; }
-        public int CopmanySicid { get; set; }
+        public int? Code { get; set; }
         public int ReportingFrequencyId { get; set; }
         public int FinancialMangmentSystemId { get; set; }
         public int? LibraryId { get; set; }
+        public int? CurrencyId { get; set; }
         public byte? FiscalStartDay { get; set; }
         public byte? FiscalStartMonth { get; set; }
         public string Type { get; set; }

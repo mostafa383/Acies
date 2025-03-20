@@ -11,5 +11,7 @@ public partial class Mapping
 
     public string Category { get; set; }
 
+    public string FullPath { get; set; }
+
     public virtual ICollection<OriginalAccountName> OriginalAccountNames { get; set; } = new List<OriginalAccountName>();
 }

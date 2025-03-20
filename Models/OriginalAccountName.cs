@@ -15,8 +15,6 @@ public partial class OriginalAccountName
 
     public string Tags { get; set; }
 
-    public virtual EngagmentTb Engagement { get; set; }
-
     public virtual ICollection<GeneralLedger> GeneralLedgers { get; set; } = new List<GeneralLedger>();
 
     public virtual Mapping MappedAccount { get; set; }

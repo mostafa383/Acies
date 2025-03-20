@@ -12,8 +12,4 @@ public partial class CopmanySictb
     public string CopmanySicdescription { get; set; }
 
     public string CopmanySicindustry { get; set; }
-
-    public virtual ICollection<EngagmentTb> EngagmentTbs { get; set; } = new List<EngagmentTb>();
-
-    public virtual ICollection<OrganizationTb> OrganizationTbs { get; set; } = new List<OrganizationTb>();
 }

@@ -11,6 +11,8 @@ namespace AciesManagmentProject.DTO
         public DateOnly OrganizationCreatedDate { get; set; }
 
         public bool? OrganizationStatus { get; set; }
+        public int? Code { get; set; }
+
 
         public int OwnerId { get; set; }
 

@@ -4,6 +4,7 @@ using AciesManagmentProject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,40 +16,40 @@ namespace AciesManagmentProject.Controllers
     [ApiController]
     public class ListsController : ControllerBase
     {
-        private readonly AciesContext context;
-        public ListsController(AciesContext context)
+        private readonly DbAciesContext context;
+        public ListsController(DbAciesContext context)
         {
             this.context = context;       
         }
-        [HttpGet]
-        [Route("Select/All/Company/SIC")]
-        public IActionResult SelectAllCompanySIC()
-        {
-            try
-            {
-                using (context)
-                {
-                    var companySICList = context.CopmanySictbs.Select
-                        (e => new { Id=e.CopmanySicid, Description=e.CopmanySicdescription }).ToList();
-                    return Ok(companySICList);
-                }
-            }
-            catch(Exception)
-            {
-                return BadRequest("This Process Failed");
-            }
-        }
+        //[HttpGet]
+        //[Route("Select/All/Company/SIC")]
+        //public IActionResult SelectAllCompanySIC()
+        //{
+        //    try
+        //    {
+        //        using (context)
+        //        {
+        //            var companySICList = context.CopmanySictbs.Select
+        //                (e => new { Id=e.CopmanySicid, Description=e.CopmanySicdescription }).ToList();
+        //            return Ok(companySICList);
+        //        }
+        //    }
+        //    catch(Exception)
+        //    {
+        //        return BadRequest("This Process Failed");
+        //    }
+        //}
 
         [HttpGet]
-        [Route("Select/All/Company/SICTb")]
+        [Route("Select/All/Company/SIC")]
         public IActionResult SelectAllCompanySICTb()
         {
             try
             {
                 using (context)
                 {
-                    var companySICList = context.CopmanySictbs.Select
-                        (e => new { e.CopmanySicid, e.CopmanySicdescription }).ToList();
+                    var companySICList = context.CompanySics.Select
+                        (e => new { e.Id, e.Description }).ToList();
                     return Ok(companySICList);
                 }
             }
@@ -57,6 +58,27 @@ namespace AciesManagmentProject.Controllers
                 return BadRequest("This Process Failed");
             }
         }
+
+        [HttpGet]
+        [Route("GetIndustriess")]
+        public IActionResult GetIndustries()
+        {
+            try
+            {
+                using (context)
+                {
+                    var companySICList = context.Industries.
+                        Select
+                        (e => new { e.Code, e.Description }).ToList();
+                    return Ok(companySICList);
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest("This Process Failed");
+            }
+        }
+
 
         [HttpGet]
         [Route("GetIndustries")]
@@ -128,10 +150,11 @@ namespace AciesManagmentProject.Controllers
                 using (context)
                 {
                     var companySICList = context.EngagmentTbs.
+                        Include(e=>e.IndustryCodeNavigation).
                         Where(e=>e.EngagmentId==engamentId ).
                         Select(e => new
                         {
-                            e.CopmanySicid,
+                            e.IndustryCodeNavigation.CompanySic,
                             e.ReportingFrequencyId,
                             e.FinancialMangmentSystemId,
                             e.FiscalStartDay,

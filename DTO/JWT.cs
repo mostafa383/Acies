@@ -32,10 +32,10 @@ namespace AciesManagmentProject.DTO
             var claims = new List<Claim>
             {
                 new Claim("Id", user.UserId.ToString()),
-                new Claim("Image", user.UserImage),
-                new Claim("Name", user.UserName),
+                new Claim("Image", user.UserImage is  null ?"":user.UserImage),
+                new Claim("Name", user.UserName ),
                 new Claim("Email", user.UserEmail),
-                new Claim("Phone", user.UserPhone)
+                new Claim("Phone", user.UserPhone is null ?"":user.UserPhone)
             };
             var tokenDescriptor = new SecurityTokenDescriptor
             {

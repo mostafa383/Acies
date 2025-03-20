@@ -14,11 +14,19 @@ namespace AciesManagmentProject.help
         public bool? EngagmentStatus { get; set; }
         public int OrganizationId { get; set; }
         public string OwnerName { get; set; }
-        public int CopmanySicid { get; set; }
+        public int? CopmanySicid { get; set; }
+        public int? Code{ get; set; }
         public int ReportingFrequencyId { get; set; }
         public int FinancialMangmentSystemId { get; set; }
         public byte? FiscalStartDay { get; set; }
         public byte? FiscalStartMonth { get; set; }
+        public int? CurrrencyId { get; set; }
+
+        public string CurrrencyName { get; set; }
+
+        public string CurrrencyShortName { get; set; }
+
+        public string CurrrencySymbol { get; set; }
         public List<UserOrganizationAttriputeClass> Users { get; set; }
     }
 }

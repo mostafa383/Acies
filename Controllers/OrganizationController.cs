@@ -4,16 +4,18 @@ using AciesManagmentProject.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Linq;
 
 namespace AciesManagmentProject.Controllers
 {
     [Route("api/[controller]"), Authorize]
     [ApiController]
-    public class OrganizationController(AciesContext context) : ControllerBase
+    public class OrganizationController(DbAciesContext context) : ControllerBase
     {
 
         [HttpPost]
@@ -34,7 +36,8 @@ namespace AciesManagmentProject.Controllers
 
                     OwnerId = organizationTb.OwnerId,
 
-                    CopmanySicid = organizationTb.CopmanySicid,
+                    CompanySicid = organizationTb.CopmanySicid,
+                    IndustryCode=organizationTb.Code,
 
                     ReportingFrequencyId = organizationTb.ReportingFrequencyId,
 
@@ -91,7 +94,7 @@ namespace AciesManagmentProject.Controllers
                             userstor.Add(userOrganizationAttriputeClass);
                         }
 
-                        var org = context.OrganizationUserViews.Where(x => x.OrganizationId == orgList[i].OrganizationId).FirstOrDefault();
+                        var org = context.OrganizationTbs.Include(e=>e.Owner).Where(x => x.OrganizationId == orgList[i].OrganizationId).FirstOrDefault();
                         UserOrganizationClass userOrganizationClass = new UserOrganizationClass()
                         {
                             OrganizationId = org.OrganizationId,
@@ -99,9 +102,12 @@ namespace AciesManagmentProject.Controllers
                             OrganizationDescription = org.OrganizationDescription,
                             OrganizationCreatedDate = DateTime.Parse(org.OrganizationCreatedDate.ToString()),
                             OrganizationStatus = org.OrganizationStatus,
-                            OwnerName = org.UserName,
+                            OwnerName = org.Owner.UserName,
                             EngagmentCount = engagCount,
-                            Users = userstor
+                            Users = userstor,
+                            Code=org.IndustryCode,
+                            SIC=org.CompanySicid
+
                         };
                         orgstor.Add(userOrganizationClass);
                     }
@@ -132,18 +138,21 @@ namespace AciesManagmentProject.Controllers
             try
             {
 
-                var orgList = context.OrganizationViews.Where(x => x.OrganizationId == OrganizationtId).FirstOrDefault();
+                var orgList = context.OrganizationTbs.
+                    Include(e=>e.Owner).
+                    Include(e=>e.UserOrganizationTbs).
+                    ThenInclude(e=>e.User).
+                    Where(x => x.OrganizationId == OrganizationtId).FirstOrDefault();
                 if (orgList != null)
                 {
-                    var orgUsers = context.OrganizationUserViews.Where(x => x.OrganizationId == OrganizationtId).ToList();
                     List<UserOrganizationAttriputeClass> stor = new List<UserOrganizationAttriputeClass>();
-                    for (int i = 0; i < orgUsers.Count; i++)
+                    foreach (var item in orgList.UserOrganizationTbs)
                     {
                         UserOrganizationAttriputeClass organizationByIdAttriputeClass = new UserOrganizationAttriputeClass()
                         {
-                            UserId = orgUsers[i].UserId.Value,
-                            UserName = orgUsers[i].UserName,
-                            UserImage = orgUsers[i].UserImage
+                            UserId = item.UserId,
+                            UserName = item.User.UserName,
+                            UserImage = item.User.UserImage
                         };
                         stor.Add(organizationByIdAttriputeClass);
                     }
@@ -154,8 +163,11 @@ namespace AciesManagmentProject.Controllers
                         OrganizationDescription = orgList.OrganizationDescription,
                         OrganizationCreatedDate = DateTime.Parse(orgList.OrganizationCreatedDate.ToString()),
                         OrganizationStatus = orgList.OrganizationStatus,
-                        OwnerName = orgList.UserName,
-                        Users = stor
+                        OwnerName = orgList.Owner.UserName,
+                        Users = stor,
+                        Code=orgList.IndustryCode,
+                        SIC=orgList.CompanySicid,
+                        
                     };
                     return Ok(organizationByIdAttriputeClass1);
                 }
@@ -331,7 +343,11 @@ namespace AciesManagmentProject.Controllers
                         user.OrganizationCreatedDate = DateOnly.Parse( userUpdateClass.OrganizationCreatedDate.Value.ToString("yyyy/MM/dd"));
                     if(userUpdateClass.OrganizationStatus is not null)
                          user.OrganizationStatus= userUpdateClass.OrganizationStatus;
-                        context.SaveChanges();
+                    if (userUpdateClass.Code is not null)
+                        user.IndustryCode = userUpdateClass.Code;
+                    if (userUpdateClass.SIC is not null)
+                        user.CompanySicid = userUpdateClass.SIC;
+                    context.SaveChanges();
                     return Ok("Organization Updated");
                 }
                 else

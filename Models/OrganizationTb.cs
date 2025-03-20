@@ -17,17 +17,19 @@ public partial class OrganizationTb
 
     public int OwnerId { get; set; }
 
-    public int CopmanySicid { get; set; }
+    public int? CompanySicid { get; set; }
+
+    public int? IndustryCode { get; set; }
 
     public int ReportingFrequencyId { get; set; }
 
     public int FinancialMangmentSystemId { get; set; }
 
-    public virtual CopmanySictb CopmanySic { get; set; }
+    public virtual CompanySic CompanySic { get; set; }
 
     public virtual ICollection<EngagmentTb> EngagmentTbs { get; set; } = new List<EngagmentTb>();
 
-    public virtual FinancialMangmentSystemTb FinancialMangmentSystem { get; set; }
+    public virtual Industry IndustryCodeNavigation { get; set; }
 
     public virtual UserTb Owner { get; set; }
 
