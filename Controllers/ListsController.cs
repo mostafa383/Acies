@@ -16,8 +16,8 @@ namespace AciesManagmentProject.Controllers
     [ApiController]
     public class ListsController : ControllerBase
     {
-        private readonly DbAciesContext context;
-        public ListsController(DbAciesContext context)
+        private readonly DbA9b860AciesContext context;
+        public ListsController(DbA9b860AciesContext context)
         {
             this.context = context;       
         }
@@ -69,7 +69,7 @@ namespace AciesManagmentProject.Controllers
                 {
                     var companySICList = context.Industries.
                         Select
-                        (e => new { e.Code, e.Description }).ToList();
+                        (e => new { e.Code, e.Description ,e.CompanySic}).ToList();
                     return Ok(companySICList);
                 }
             }

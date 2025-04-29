@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace AciesManagmentProject.help
 {
-    public class OrganizationBYOwnerClass(DbAciesContext context)
+    public class OrganizationBYOwnerClass(DbA9b860AciesContext context)
     {
         public List<UserOrganizationClass> selectOrganizationByOwner(int onwerId)
         {

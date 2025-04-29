@@ -16,7 +16,7 @@ namespace AciesManagmentProject.Controllers
 {
     [Route("api/[controller]"), Authorize]
     [ApiController]
-    public class EngagmentController(DbAciesContext context, IWebHostEnvironment _environment) : ControllerBase
+    public class EngagmentController(DbA9b860AciesContext context, IWebHostEnvironment _environment) : ControllerBase
     {
         //[Route("IWebHostEnvironment")]
         //public class ServerFiles
@@ -58,7 +58,9 @@ namespace AciesManagmentProject.Controllers
         {
             try
             {
-
+                var eng = context.EngagmentTbs.FirstOrDefault(e=>e.OrganizationId==insertEngagmentClass.OrganizationId && e.EngagmentName.ToLower()==insertEngagmentClass.EngagmentName.ToLower());
+                if (eng is not null)
+                    return BadRequest("This engagment name is found");
                 EngagmentTb engagmentTb = new EngagmentTb()
                 {
                     EngagmentName = insertEngagmentClass.EngagmentName,
@@ -73,7 +75,7 @@ namespace AciesManagmentProject.Controllers
                     IndustryCode = insertEngagmentClass.Code,
                     FiscalStartDay = insertEngagmentClass.FiscalStartDay,
                     FiscalStartMonth = insertEngagmentClass.FiscalStartMonth,
-                    Type = insertEngagmentClass.Type,
+                    AnalysisType = insertEngagmentClass.Type,
                     Currency=insertEngagmentClass.CurrencyId
                 };
                 if (insertEngagmentClass.LibraryId is not null)
@@ -103,10 +105,8 @@ namespace AciesManagmentProject.Controllers
         [HttpGet("sd")]
         public IActionResult sd()
         {
-            context.Database.ExecuteSqlRaw(
-                "exec [dbo].[anlys_PrepareDefaultValues] @engagementID = {0}",
-                3);
-            return Ok("Sdf");
+           
+            return Ok(context.EngagmentTbs.Select(e=>e.EngagmentId).ToList());
         }
 
 
@@ -119,31 +119,33 @@ namespace AciesManagmentProject.Controllers
                 if (allEngagmentByStatusClass.EngagmentStatus == null)
                 {
                     var UsersCount = context.EngagmentUserViews.Where
-                        (x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId).Count();
+                        (x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId).Distinct().Count();
                     if (UsersCount > 0)
                     {
                         int PageCount = (UsersCount / allEngagmentByStatusClass.RowCount) + 1;
 
                         var orgList = context.EngagmentUserViews.Where(x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId).ToList();
+                        var engagments = orgList.GroupBy(e=>e.EngagmentId);
                         List<UserEngagmentClass> orgstor = new List<UserEngagmentClass>();
-                        for (int i = 0; i < orgList.Count; i++)
+                        foreach (var item in engagments)
                         {
+                            var engId = item.Key;
+                            var userIdList = context.EngagmentUserViews.
+                                Where(x => x.EngagmentId == engId)
+                                .Select(e =>  e.UserId ).
+                                Distinct().
+                                ToList();
+                            var users = context.UserTbs
+                             .Where(x => userIdList.Contains(x.UserId))
+                             .Select(u => new UserOrganizationAttriputeClass
+                             {
+                                 UserId = u.UserId,
+                                 UserName = u.UserName,
+                                 UserImage = u.UserImage
+                             })
+                             .ToList();
 
-                            var userIdList = context.EngagmentUserViews.Where(x => x.EngagmentId == orgList[i].EngagmentId).Select(e => new { e.UserId }).ToList();
-                            List<UserOrganizationAttriputeClass> userstor = new List<UserOrganizationAttriputeClass>();
-                            for (int z = 0; z < userIdList.Count; z++)
-                            {
-                                var user = context.UserTbs.Where(x => x.UserId == userIdList[z].UserId).FirstOrDefault();
-                                UserOrganizationAttriputeClass userOrganizationAttriputeClass = new UserOrganizationAttriputeClass()
-                                {
-                                    UserId = user.UserId,
-                                    UserName = user.UserName,
-                                    UserImage = user.UserImage
-                                };
-                                userstor.Add(userOrganizationAttriputeClass);
-                            }
-
-                            var org = context.EngagmentViews.Where(x => x.EngagmentId == orgList[i].EngagmentId).FirstOrDefault();
+                            var org = context.EngagmentViews.Where(x => x.EngagmentId == engId).FirstOrDefault();
 
                             UserEngagmentClass userOrganizationClass = new UserEngagmentClass()
                             {
@@ -153,7 +155,7 @@ namespace AciesManagmentProject.Controllers
                                 EngagmentCreatedDate = DateTime.Parse(org.EngagmentCreatedDate.ToString()),
                                 EngagmentStatus = org.EngagmentStatus,
                                 OwnerName = org.UserName,
-                                Users = userstor
+                                Users = users
                             };
                             orgstor.Add(userOrganizationClass);
                         }
@@ -172,31 +174,34 @@ namespace AciesManagmentProject.Controllers
                 else
                 {
                     var UsersCount = context.EngagmentUserViews.Where
-                        (x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).Count();
+                        (x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).Distinct().Count();
                     if (UsersCount > 0)
                     {
                         int PageCount = (UsersCount / allEngagmentByStatusClass.RowCount) + 1;
 
                         var orgList = context.EngagmentUserViews.Where(x => x.UserId == allEngagmentByStatusClass.UserId && x.OrganizationId == allEngagmentByStatusClass.OrganizationtId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).ToList();
+                        var engs = orgList.GroupBy(e=>e.EngagmentId);
                         List<UserEngagmentClass> orgstor = new List<UserEngagmentClass>();
-                        for (int i = 0; i < orgList.Count; i++)
+                        foreach (var item in engs)
+                    
                         {
+                            var engId = item.Key;
 
-                            var userIdList = context.EngagmentUserViews.Where(x => x.EngagmentId == orgList[i].EngagmentId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).Select(e => new { e.UserId }).ToList();
-                            List<UserOrganizationAttriputeClass> userstor = new List<UserOrganizationAttriputeClass>();
-                            for (int z = 0; z < userIdList.Count; z++)
-                            {
-                                var user = context.UserTbs.Where(x => x.UserId == userIdList[z].UserId).FirstOrDefault();
-                                UserOrganizationAttriputeClass userOrganizationAttriputeClass = new UserOrganizationAttriputeClass()
+                            var userIdList = context.EngagmentUserViews.
+                                Where(x => x.EngagmentId == engId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).
+                                Select(e =>e.UserId ).
+                                Distinct().
+                                ToList();
+                           var users=context.UserTbs.
+                                Where(e=> userIdList.Contains(e.UserId)).
+                                Select(u => new UserOrganizationAttriputeClass
                                 {
-                                    UserId = user.UserId,
-                                    UserName = user.UserName,
-                                    UserImage = user.UserImage
-                                };
-                                userstor.Add(userOrganizationAttriputeClass);
-                            }
-
-                            var org = context.EngagmentViews.Where(x => x.EngagmentId == orgList[i].EngagmentId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).FirstOrDefault();
+                                    UserId = u.UserId,
+                                    UserName = u.UserName,
+                                    UserImage = u.UserImage
+                                }).
+                                ToList();
+                            var org = context.EngagmentViews.Where(x => x.EngagmentId == engId && x.EngagmentStatus == allEngagmentByStatusClass.EngagmentStatus).FirstOrDefault();
 
                             UserEngagmentClass userOrganizationClass = new UserEngagmentClass()
                             {
@@ -206,7 +211,7 @@ namespace AciesManagmentProject.Controllers
                                 EngagmentCreatedDate = DateTime.Parse(org.EngagmentCreatedDate.ToString()),
                                 EngagmentStatus = org.EngagmentStatus,
                                 OwnerName = org.UserName,
-                                Users = userstor
+                                Users = users
                             };
                             orgstor.Add(userOrganizationClass);
                         }
@@ -320,14 +325,19 @@ namespace AciesManagmentProject.Controllers
         {
             try
             {
-
-                context.UserEngagmentTbs.Add(new UserEngagmentTb
+                var userInEngagment = context.UserEngagmentTbs.
+                    FirstOrDefault(e=>e.UserId==userEngagmentTb.UserId &&
+                                   e.EngagmentId==userEngagmentTb.EngagmentId);
+                if(userInEngagment == null)
                 {
-                    EngagmentId = userEngagmentTb.EngagmentId,
-                    UserId = userEngagmentTb.UserId,
+                    context.UserEngagmentTbs.Add(new UserEngagmentTb
+                    {
+                        EngagmentId = userEngagmentTb.EngagmentId,
+                        UserId = userEngagmentTb.UserId,
 
-                });
-                context.SaveChanges();
+                    });
+                    context.SaveChanges();
+                }
                 return Ok("User Inserted In Engagment");
 
             }
@@ -461,7 +471,7 @@ namespace AciesManagmentProject.Controllers
                         accountMaped = acoount.Id;
                     }
 
-                    GeneralLedger generalLedger = new GeneralLedger()
+                    Transaction transaction = new Transaction()
                     {
 
                         EngagementId = postGeneralLedgerListClass.EngagementId,
@@ -477,7 +487,7 @@ namespace AciesManagmentProject.Controllers
 
                     };
 
-                    context.GeneralLedgers.Add(generalLedger);
+                    context.Transactions.Add(transaction);
                     context.SaveChanges();
                 }
                 return Ok("File Uploaded");

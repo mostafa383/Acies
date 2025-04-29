@@ -27,12 +27,6 @@ public partial class EngagmentView
 
     public string OrganizationName { get; set; }
 
-    public int? CopmanySicid { get; set; }
-
-    public string CopmanySicname { get; set; }
-
-    public string CopmanySicindustry { get; set; }
-
     public int? ReportingFrequencyId { get; set; }
 
     public string ReportingFrequencyName { get; set; }
@@ -42,4 +36,10 @@ public partial class EngagmentView
     public string LibraryId { get; set; }
 
     public string LibraryName { get; set; }
+
+    public int CopmanySicid { get; set; }
+
+    public string CopmanySicname { get; set; }
+
+    public string CopmanySicindustry { get; set; }
 }

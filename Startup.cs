@@ -50,7 +50,7 @@ namespace AciesManagmentProject
                 options.ValueCountLimit = int.MaxValue; // Increase the limit as needed
             });
        
-            services.AddDbContext<DbAciesContext>(options =>
+            services.AddDbContext<DbA9b860AciesContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("Aciess")));
 
 

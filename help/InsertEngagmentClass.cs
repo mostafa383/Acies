@@ -23,6 +23,6 @@ namespace AciesManagmentProject.help
         public int? CurrencyId { get; set; }
         public byte? FiscalStartDay { get; set; }
         public byte? FiscalStartMonth { get; set; }
-        public string Type { get; set; }
+        public byte? Type { get; set; }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace AciesManagmentProject.Models;
 
-public partial class AccountsReceivable
+public partial class Transaction
 {
     public long Id { get; set; }
 
@@ -32,4 +32,8 @@ public partial class AccountsReceivable
     public double? Riskpercent { get; set; }
 
     public virtual OriginalAccountName AccountNavigation { get; set; }
+
+    public virtual ICollection<AnlysCpsValue> AnlysCpsValues { get; set; } = new List<AnlysCpsValue>();
+
+    public virtual EngagmentTb Engagement { get; set; }
 }

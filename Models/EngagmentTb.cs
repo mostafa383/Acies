@@ -33,9 +33,11 @@ public partial class EngagmentTb
 
     public byte? FiscalStartMonth { get; set; }
 
-    public string Type { get; set; }
-
     public int? Currency { get; set; }
+
+    public byte? AnalysisType { get; set; }
+
+    public virtual AnalysisType AnalysisTypeNavigation { get; set; }
 
     public virtual ICollection<ControlPointCase> ControlPointCases { get; set; } = new List<ControlPointCase>();
 
@@ -54,4 +56,6 @@ public partial class EngagmentTb
     public virtual UserTb Owner { get; set; }
 
     public virtual ReportingFrequencyTb ReportingFrequency { get; set; }
+
+    public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 }

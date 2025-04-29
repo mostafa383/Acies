@@ -2,25 +2,22 @@
 using AciesManagmentProject.help;
 using AciesManagmentProject.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Linq;
 
 namespace AciesManagmentProject.Controllers
 {
     [Route("api/[controller]"), Authorize]
     [ApiController]
-    public class OrganizationController(DbAciesContext context) : ControllerBase
+    public class OrganizationController(DbA9b860AciesContext context) : ControllerBase
     {
 
         [HttpPost]
         [Route("Insert/Organization")]
-        public IActionResult InsertOrganization([FromForm]AddOrganizationDto organizationTb)
+        public IActionResult InsertOrganization([FromForm] AddOrganizationDto organizationTb)
         {
             try
             {
@@ -37,7 +34,7 @@ namespace AciesManagmentProject.Controllers
                     OwnerId = organizationTb.OwnerId,
 
                     CompanySicid = organizationTb.CopmanySicid,
-                    IndustryCode=organizationTb.Code,
+                    IndustryCode = organizationTb.Code,
 
                     ReportingFrequencyId = organizationTb.ReportingFrequencyId,
 
@@ -94,7 +91,7 @@ namespace AciesManagmentProject.Controllers
                             userstor.Add(userOrganizationAttriputeClass);
                         }
 
-                        var org = context.OrganizationTbs.Include(e=>e.Owner).Where(x => x.OrganizationId == orgList[i].OrganizationId).FirstOrDefault();
+                        var org = context.OrganizationTbs.Include(e => e.Owner).Where(x => x.OrganizationId == orgList[i].OrganizationId).FirstOrDefault();
                         UserOrganizationClass userOrganizationClass = new UserOrganizationClass()
                         {
                             OrganizationId = org.OrganizationId,
@@ -105,8 +102,8 @@ namespace AciesManagmentProject.Controllers
                             OwnerName = org.Owner.UserName,
                             EngagmentCount = engagCount,
                             Users = userstor,
-                            Code=org.IndustryCode,
-                            SIC=org.CompanySicid
+                            Code = org.IndustryCode,
+                            SIC = org.CompanySicid
 
                         };
                         orgstor.Add(userOrganizationClass);
@@ -121,9 +118,7 @@ namespace AciesManagmentProject.Controllers
 
                 }
                 else
-                    return NotFound("Not Exist Users");
-
-
+                    return NotFound("Not created organization");
             }
             catch
             {
@@ -139,9 +134,9 @@ namespace AciesManagmentProject.Controllers
             {
 
                 var orgList = context.OrganizationTbs.
-                    Include(e=>e.Owner).
-                    Include(e=>e.UserOrganizationTbs).
-                    ThenInclude(e=>e.User).
+                    Include(e => e.Owner).
+                    Include(e => e.UserOrganizationTbs).
+                    ThenInclude(e => e.User).
                     Where(x => x.OrganizationId == OrganizationtId).FirstOrDefault();
                 if (orgList != null)
                 {
@@ -165,9 +160,9 @@ namespace AciesManagmentProject.Controllers
                         OrganizationStatus = orgList.OrganizationStatus,
                         OwnerName = orgList.Owner.UserName,
                         Users = stor,
-                        Code=orgList.IndustryCode,
-                        SIC=orgList.CompanySicid,
-                        
+                        Code = orgList.IndustryCode,
+                        SIC = orgList.CompanySicid,
+
                     };
                     return Ok(organizationByIdAttriputeClass1);
                 }
@@ -289,10 +284,10 @@ namespace AciesManagmentProject.Controllers
         {
             try
             {
-                context.UserOrganizationTbs.Add( new UserOrganizationTb
+                context.UserOrganizationTbs.Add(new UserOrganizationTb
                 {
-                    UserId= userOrganizationTb.UserId,
-                    OrganizationId= userOrganizationTb.OrganizationId,
+                    UserId = userOrganizationTb.UserId,
+                    OrganizationId = userOrganizationTb.OrganizationId,
 
                 });
                 context.SaveChanges();
@@ -335,14 +330,14 @@ namespace AciesManagmentProject.Controllers
                 var user = context.OrganizationTbs.Where(x => x.OrganizationId == OrganizationtId).FirstOrDefault();
                 if (user != null)
                 {
-                    if(userUpdateClass.OrganizationName is not null)
+                    if (userUpdateClass.OrganizationName is not null)
                         user.OrganizationName = userUpdateClass.OrganizationName;
-                    if(userUpdateClass.OrganizationDescription is not null)
-                        user.OrganizationDescription= userUpdateClass.OrganizationDescription;
-                    if(userUpdateClass.OrganizationCreatedDate is not null)
-                        user.OrganizationCreatedDate = DateOnly.Parse( userUpdateClass.OrganizationCreatedDate.Value.ToString("yyyy/MM/dd"));
-                    if(userUpdateClass.OrganizationStatus is not null)
-                         user.OrganizationStatus= userUpdateClass.OrganizationStatus;
+                    if (userUpdateClass.OrganizationDescription is not null)
+                        user.OrganizationDescription = userUpdateClass.OrganizationDescription;
+                    if (userUpdateClass.OrganizationCreatedDate is not null)
+                        user.OrganizationCreatedDate = DateOnly.Parse(userUpdateClass.OrganizationCreatedDate.Value.ToString("yyyy/MM/dd"));
+                    if (userUpdateClass.OrganizationStatus is not null)
+                        user.OrganizationStatus = userUpdateClass.OrganizationStatus;
                     if (userUpdateClass.Code is not null)
                         user.IndustryCode = userUpdateClass.Code;
                     if (userUpdateClass.SIC is not null)
@@ -373,7 +368,7 @@ namespace AciesManagmentProject.Controllers
                     var controlPoints = context.ControlPoints
                         .Where(cp => context.EngagmentTbs.Any(e => e.OrganizationId == OrganizationtId && cp.EngagementId == e.EngagmentId)) // Assuming you have EngagmentId in ControlPoints
                         .ToList();
-                    var ControlPointCases=context.ControlPointCases.Where(cp => context.EngagmentTbs.Any(e => e.OrganizationId == OrganizationtId && cp.EngagementId == e.EngagmentId)) // Assuming you have EngagmentId in ControlPoints
+                    var ControlPointCases = context.ControlPointCases.Where(cp => context.EngagmentTbs.Any(e => e.OrganizationId == OrganizationtId && cp.EngagementId == e.EngagmentId)) // Assuming you have EngagmentId in ControlPoints
                         .ToList();
                     context.UserOrganizationTbs.RemoveRange(organizationUsers);
                     context.ControlPointCases.RemoveRange(ControlPointCases);

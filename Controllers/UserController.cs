@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -16,9 +18,9 @@ namespace AciesManagmentProject.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private DbAciesContext context;
+        private DbA9b860AciesContext context;
         private IWebHostEnvironment _environment;
-        public UserController(DbAciesContext context, IWebHostEnvironment _environment)
+        public UserController(DbA9b860AciesContext context, IWebHostEnvironment _environment)
         {
             this.context = context;
             this._environment = _environment;
@@ -67,6 +69,12 @@ namespace AciesManagmentProject.Controllers
                 {
                     Directory.CreateDirectory(_environment.WebRootPath + "//Images_Server//");
                 }
+                var userem = context.UserTbs.FirstOrDefault(e=>e.UserEmail==userTb.UserEmail);
+                if (userem is not null)
+                    return BadRequest("This email is already exist");
+                var userph = context.UserTbs.FirstOrDefault(e => e.UserPhone == userTb.UserPhone);
+                if (userph is not null)
+                    return BadRequest("This phone is already exist");
                 if (userTb.UserImage is not null)
                 {
                     using (FileStream filestrem = System.IO.File.Create(_environment.WebRootPath + "//Images_Server//" + userTb.UserImage.FileName))
@@ -76,6 +84,7 @@ namespace AciesManagmentProject.Controllers
                         image = "//Images_Server//" + userTb.UserImage.FileName;
                     }
                 }
+
                 context.UserTbs.Add(new UserTb
                 {
                     UserEmail = userTb.UserEmail,
@@ -129,34 +138,80 @@ namespace AciesManagmentProject.Controllers
 
         [HttpPost]
         [Route("Select/User/By/UserName/{PageNumber}/{RowCount}")]
-        public IActionResult SelectQuestionByQustionText([FromForm] GetUserDto usersTb, int PageNumber = 1, int RowCount = 10)
+        public IActionResult SelectQuestionByQustionText([FromForm] GetUserDto usersTb,int? orgId, int PageNumber = 1, int RowCount = 10)
         {
-            try
-            {
-                var userName = context.UserTbs.Select(e => new { e.UserName }).ToList();
-                var userContaintNameCount = userName.Where(x => x.UserName.Contains(usersTb.UserName, StringComparison.OrdinalIgnoreCase));
-                var userCount = userContaintNameCount.Count();
-                if (userCount > 0)
-                {
-                    int PageCount = (userCount / RowCount) + 1;
-                    var userlist = context.UserTbs.Select
-                        (e => new { e.UserId, e.UserName, e.UserPhone, e.UserEmail, e.UserPassword, e.UserImage }).ToList();
-                    var userListName = userlist.Where(x => x.UserName.Contains(usersTb.UserName, StringComparison.OrdinalIgnoreCase));
-                    return Ok((new PagingClass
-                    {
-                        RawCount = userCount,
-                        PageCount = PageCount,
+            //try
+            //{
+            //    var userName = context.UserTbs.Select(e => new { e.UserName }).ToList();
+            //    var userContaintNameCount = userName.Where(x => x.UserName.Contains(usersTb.UserName, StringComparison.OrdinalIgnoreCase));
+            //    var userCount = userContaintNameCount.Count();
+            //    if (userCount > 0)
+            //    {
+            //        int PageCount = (userCount / RowCount) + 1;
+            //        var userlist = context.UserTbs.Select
+            //            (e => new { e.UserId, e.UserName, e.UserPhone, e.UserEmail, e.UserPassword, e.UserImage }).ToList();
+            //        var userListName = userlist.Where(x => x.UserName.Contains(usersTb.UserName, StringComparison.OrdinalIgnoreCase));
+            //        return Ok((new PagingClass
+            //        {
+            //            RawCount = userCount,
+            //            PageCount = PageCount,
 
-                    }, userListName.Skip((PageNumber - 1) * RowCount).Take(RowCount).ToList()));
+            //        }, userListName.Skip((PageNumber - 1) * RowCount).Take(RowCount).ToList()));
 
-                }
+            //    }
+            //    else
+            //        return NotFound("Not Exist users");
+            //}
+            //catch
+            //{
+            //    return BadRequest("This Process Failed");
+            //}
+            try {
+                    var users = new List<GetUserDto>();
+                if(orgId is  not null)
+                     users = context.UserOrganizationTbs.Include(e => e.User).Where(e => e.OrganizationId == orgId).Select(e=> new GetUserDto
+                     {
+                         UserEmail=e.User.UserEmail, UserPhone=e.User.UserPhone, UserPassword=e.User.UserPassword, UserImage=e.User.UserImage,
+                         UserName=e.User.UserName,UserId=e.UserId
+                     }).ToList();
                 else
-                    return NotFound("Not Exist users");
-            }
-            catch
-            {
-                return BadRequest("This Process Failed");
-            }
+                    users = context.UserTbs.Select(e => new GetUserDto
+                    {
+                        UserEmail = e.UserEmail,
+                        UserPhone = e.UserPhone,
+                        UserPassword = e.UserPassword,
+                        UserImage = e.UserImage,
+                        UserName = e.UserName,
+                        UserId=e.UserId
+                        
+                    }).ToList();
+                if (usersTb.UserName is not null)
+                        users = users.Where(x => x.UserName.Contains(usersTb.UserName, StringComparison.OrdinalIgnoreCase)).ToList();
+                    var userCount = users.Count();
+                    if (userCount > 0)
+                    {
+                        int PageCount = (userCount / RowCount) + 1;
+                        return Ok((new PagingClass
+                        {
+                            RawCount = userCount,
+                            PageCount = PageCount,
+                        }, users.Skip((PageNumber - 1) * RowCount).Take(RowCount).ToList()));
+
+                    }
+                    else
+                        return Ok((new PagingClass
+                        {
+                            RawCount = 0,
+                            PageCount = 0,
+
+                        }, new List<object>()));
+                }
+                catch
+                {
+                    return BadRequest("This Process Failed");
+                }
+            
+
         }
 
         [HttpPost]
@@ -246,6 +301,40 @@ namespace AciesManagmentProject.Controllers
             {
                 return NotFound("Not Exist Users");
             }
+        }
+        [HttpGet("GetStatistics")]
+        public IActionResult GetStatistics()
+        {
+            try
+            {
+                var id = int.Parse(User.Claims.FirstOrDefault(e => e.Type == "Id").Value);
+                var organizations = context.UserOrganizationTbs.Count(e=>e.UserId==id);
+                var engagments = context.UserEngagmentTbs.Count(e=>e.UserId==id);
+                return Ok(new
+                {
+                    organizations,
+                    engagments
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("Test"),AllowAnonymous]
+        public IActionResult Test()
+        {
+            int ctr = 0;
+            var users=context.UserTbs.GroupBy(e=>e.UserPhone);
+            foreach (var user in users) 
+            {
+                foreach (var item in user)
+                {
+                    item.UserPhone += ++ctr;
+                }
+            }
+            context.SaveChanges();
+            return Ok();
         }
     }
 }
