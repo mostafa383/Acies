@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace AciesManagmentProject.Controllers
 {
@@ -24,6 +25,16 @@ namespace AciesManagmentProject.Controllers
         //    public IFormFile Files { get; set; }
 
         //}
+
+
+        [HttpGet("GetAnalysisTypes")]
+        public async Task<IActionResult> GetAnalysisTypes() =>
+            Ok(await context.AnalysisTypes.Select(e=> new
+            {
+                e.Id,
+                e.AnalysisType1
+            }).ToListAsync());
+
 
         [HttpGet]
         [Route("Save/As/Server")]
@@ -403,6 +414,13 @@ namespace AciesManagmentProject.Controllers
                         user.Currency = userUpdateClass.CurrencyId;
                         context.SaveChanges();
                     }
+
+                    if (userUpdateClass.AnalysisType != null)
+                    {
+                        user.AnalysisType = userUpdateClass.AnalysisType;
+                        context.SaveChanges();
+                    }
+
                     return Ok("Engagment Updated");
                 }
                 else

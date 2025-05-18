@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AciesManagmentProject")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97ea999ff6903c77e6b00aa11839009b2e76b9c8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+48e7351167cc78021ff9ee8030fb8b0d6515a46e")]
 [assembly: System.Reflection.AssemblyProductAttribute("AciesManagmentProject")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AciesManagmentProject")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -92,7 +92,7 @@ public partial class DbA9b860AciesContext : DbContext
 
     public virtual DbSet<Gen2> Gen2s { get; set; }
 
-    public virtual DbSet<GeneralLedger> GeneralLedgers { get; set; }
+    //public virtual DbSet<GeneralLedger> GeneralLedgers { get; set; }
 
     public virtual DbSet<GeneralLedgerInternal> GeneralLedgerInternals { get; set; }
 
@@ -157,6 +157,7 @@ public partial class DbA9b860AciesContext : DbContext
         modelBuilder.Entity<ControlPointSummary>().HasNoKey();
         modelBuilder.Entity<Intangible>().HasNoKey();
         modelBuilder.Entity<Category>().HasNoKey();
+        //modelBuilder.Entity<SuspeciousWord>().HasKey(e=>e.Id);
 
         modelBuilder.Entity<AccountsPayable>(entity =>
         {
@@ -731,27 +732,27 @@ public partial class DbA9b860AciesContext : DbContext
                 .IsUnicode(false);
         });
 
-        modelBuilder.Entity<GeneralLedger>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__General___3213E83F7DE4DAAD");
+        //modelBuilder.Entity<GeneralLedger>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id).HasName("PK__General___3213E83F7DE4DAAD");
 
-            entity.ToTable("General_Ledger_");
+        //    entity.ToTable("General_Ledger_");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Account)
-                .IsRequired()
-                .HasMaxLength(20);
-            entity.Property(e => e.CompanyId).HasColumnName("companyID");
-            entity.Property(e => e.Credit).HasColumnName("CREDIT");
-            entity.Property(e => e.Debit).HasColumnName("DEBIT");
-            entity.Property(e => e.Details).HasMaxLength(200);
-            entity.Property(e => e.Notes).HasMaxLength(200);
-            entity.Property(e => e.Reference).HasMaxLength(50);
-            entity.Property(e => e.Tt)
-                .HasMaxLength(10)
-                .HasColumnName("TT");
-            entity.Property(e => e.UserId).HasColumnName("UserID");
-        });
+        //    entity.Property(e => e.Id).HasColumnName("id");
+        //    entity.Property(e => e.Account)
+        //        .IsRequired()
+        //        .HasMaxLength(20);
+        //    entity.Property(e => e.CompanyId).HasColumnName("companyID");
+        //    entity.Property(e => e.Credit).HasColumnName("CREDIT");
+        //    entity.Property(e => e.Debit).HasColumnName("DEBIT");
+        //    entity.Property(e => e.Details).HasMaxLength(200);
+        //    entity.Property(e => e.Notes).HasMaxLength(200);
+        //    entity.Property(e => e.Reference).HasMaxLength(50);
+        //    entity.Property(e => e.Tt)
+        //        .HasMaxLength(10)
+        //        .HasColumnName("TT");
+        //    entity.Property(e => e.UserId).HasColumnName("UserID");
+        //});
 
         modelBuilder.Entity<GeneralLedgerInternal>(entity =>
         {
@@ -1103,7 +1104,7 @@ public partial class DbA9b860AciesContext : DbContext
 
         modelBuilder.Entity<SuspeciousWord>(entity =>
         {
-            entity.HasNoKey();
+            //entity.HasNoKey();
 
             entity.Property(e => e.EngagementId).HasColumnName("engagementID");
             entity.Property(e => e.Word)

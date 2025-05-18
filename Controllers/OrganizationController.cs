@@ -21,6 +21,9 @@ namespace AciesManagmentProject.Controllers
         {
             try
             {
+                if (context.OrganizationTbs.
+                    FirstOrDefault( e => e.OwnerId==organizationTb.OwnerId && e.OrganizationName.ToLower() == organizationTb.OrganizationName.ToLower()) is not null)
+                    return BadRequest("This organization name is found");
                 var org = new OrganizationTb
                 {
                     OrganizationName = organizationTb.OrganizationName,

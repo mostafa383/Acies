@@ -10,7 +10,7 @@ namespace AciesManagmentProject.help
     {
         public string? EngagmentName { get; set; }
         public string? EngagmentDescription { get; set; }
-        public DateTime? EngagmentCreatedDate { get; set; }
+        public DateOnly? EngagmentCreatedDate { get; set; }
         public bool? EngagmentStatus { get; set; }
         public IFormFile? EngagmentFile { get; set; }
         public int? OwnerId { get; set; }
@@ -21,5 +21,7 @@ namespace AciesManagmentProject.help
         public int? Code { get; set; }
         public int? FinancialMangmentSystemId { get; set; }
         public int? LibraryId { get; set; }
+        public byte? AnalysisType { get; set; }
+
     }
 }

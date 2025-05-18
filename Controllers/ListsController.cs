@@ -1,4 +1,5 @@
 ﻿
+using AciesManagmentProject.DTO;
 using AciesManagmentProject.help;
 using AciesManagmentProject.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -40,6 +41,34 @@ namespace AciesManagmentProject.Controllers
         //    }
         //}
 
+        [HttpGet("GetDefaultSuspeciousWords")]
+        public async Task<IActionResult> GetDefaultSuspeciousWords() =>
+            Ok(await context.DefaultSuspeciousWords.
+                Select(e=> new
+            {
+                e.Keyword,
+            }).ToListAsync());
+
+        [HttpPost("AddSuspeciousWords")]
+        public async Task<IActionResult> AddSuspeciousWords(AddSusSto dto)
+        {
+            try
+            {
+                var list = dto.Words.Select(e => new SuspeciousWord
+                {
+                    EngagementId=dto.Id,
+                    Word=e
+                });
+                await context.AddRangeAsync(list);
+                await context.SaveChangesAsync();
+                return Ok("add");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet]
         [Route("Select/All/Company/SIC")]
         public IActionResult SelectAllCompanySICTb()
@@ -58,6 +87,8 @@ namespace AciesManagmentProject.Controllers
                 return BadRequest("This Process Failed");
             }
         }
+
+        [HttpGet("GetSus")]
 
         [HttpGet]
         [Route("GetIndustriess")]
