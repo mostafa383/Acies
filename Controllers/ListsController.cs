@@ -189,6 +189,7 @@ namespace AciesManagmentProject.Controllers
                             e.ReportingFrequencyId,
                             e.FinancialMangmentSystemId,
                             e.FiscalStartDay,
+                            e.IndustryCode,
                             e.FiscalStartMonth}).FirstOrDefault();
                     return Ok(companySICList);
                 }

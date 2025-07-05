@@ -9,5 +9,7 @@ namespace AciesManagmentProject.help
     {
         public List<PostManualEntries> ManualEntries { get; set; }
         public string SuspeciousWords { get; set; }
+        public int EngagmentId { get; set; }
+
     }
 }

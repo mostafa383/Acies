@@ -19,13 +19,6 @@ namespace AciesManagmentProject.Controllers
     [ApiController]
     public class EngagmentController(DbA9b860AciesContext context, IWebHostEnvironment _environment) : ControllerBase
     {
-        //[Route("IWebHostEnvironment")]
-        //public class ServerFiles
-        //{
-        //    public IFormFile Files { get; set; }
-
-        //}
-
 
         [HttpGet("GetAnalysisTypes")]
         public async Task<IActionResult> GetAnalysisTypes() =>
@@ -563,7 +556,7 @@ namespace AciesManagmentProject.Controllers
 
         [HttpPost]
         [Route("Insert/Manual/Entries")]
-        public IActionResult InsertManualEntries([FromBody] PostListManualEntries postListManualEntries)
+        public async Task<IActionResult> InsertManualEntries([FromBody] PostListManualEntries postListManualEntries)
         {
             List<ManualEntry> stor = new List<ManualEntry>();
             for (int i = 0; i < postListManualEntries.ManualEntries.Count; i++)
@@ -582,9 +575,25 @@ namespace AciesManagmentProject.Controllers
                 {
                     engagment.Currency = postListManualEntries.ManualEntries[i].CurrencyId;
                 }
+                
                 context.SaveChanges();
             }
 
+            try
+            {
+                var listWords = postListManualEntries.SuspeciousWords.Split(",");
+                var words = listWords.Select(e => new SuspeciousWord
+                {
+                    EngagementId = postListManualEntries.EngagmentId,
+                    Word = e
+                }).ToList();
+                context.SuspeciousWords.AddRange(words);
+                await context.SaveChangesAsync();
+            }
+            catch
+            {
+
+            }
             var susWord = context.DefaultSusKeywords.Where(x => x.Id == 1).FirstOrDefault();
             if (susWord != null)
             {
